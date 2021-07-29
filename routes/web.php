@@ -18,5 +18,5 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
-    
+    $router->post('user-signup',  ['uses'=>'UsersController@userSignUp']);
 });
