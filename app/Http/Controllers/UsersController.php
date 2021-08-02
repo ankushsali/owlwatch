@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Users;
+use App\Models\ApiToken;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -43,13 +44,34 @@ class UsersController extends Controller
 		$user->email = $request->email;
 		$user->address = $request->address;
 		$user->image = "default.png";
-		$user->image = "default.png";
 		$result = $user->save();
 
 		if ($result) {
 			return $this->sendResponse("Signup successfully!");
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function userLogin(Request $request){
+		$this->validate($request, [
+			'login_id' => 'required'
+		]);
+
+		$user = Users::where('login_id', $request->login_id)->first();
+		if (!empty($user)) {
+			$token_string = hash("sha256", rand());
+			$where = ['user_id'=>$user->uuid];
+			$authentication = ApiToken::where($where)->first();
+			if (empty($authentication)) {
+				$authentication = ApiToken::updateOrCreate(['user_id' => $user->uuid],[
+					'user_id' => $user->uuid,
+					'token' => $token_string,
+				]);
+			}
+			return $this->sendResponse($user);
+		}else{
+			return $this->sendResponse("Login failed!", 200, false);
 		}
 	}
 }
