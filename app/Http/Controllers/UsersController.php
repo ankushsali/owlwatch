@@ -14,19 +14,18 @@ class UsersController extends Controller
 		$this->validate($request, [
 			'first_name' => 'required',
 			'last_name' => 'required',
-			'phone' => 'required',
 			'email' => 'required|email',
-			'address' => 'required',
+			'school_name' => 'required',
+			'school_color' => 'required',
+			'detention_color' => 'required',
+			'type' => 'required',
 		]);
 		
+		$response = [];
+
 		$check_mail = Users::where('email', $request->email)->first();
 		if (!empty($check_mail)) {
 			return $this->sendResponse("Email already exist!", 200, false);
-		}
-
-		$check_phone = Users::where('phone', $request->phone)->first();
-		if (!empty($check_phone)) {
-			return $this->sendResponse("Mobile no. already exist!", 200, false);
 		}
 
 		$time = strtotime(Carbon::now());
@@ -39,14 +38,20 @@ class UsersController extends Controller
 		$user->login_id = $login_id;
 		$user->first_name = $request->first_name;
 		$user->last_name = $request->last_name;
-		$user->phone = $request->phone;
 		$user->email = $request->email;
-		$user->address = $request->address;
+		$user->school_name = $request->school_name;
+		$user->school_color = $request->school_color;
+		$user->detention_color = $request->detention_color;
 		$user->image = "default.png";
+		$user->type = $request->type;
+		$user->is_admin = true;
+
 		$result = $user->save();
 
 		if ($result) {
-			return $this->sendResponse("Signup successfully!");
+			$response['message'] = "Signup successfully!";
+			$response['data'] = $user;
+			return $this->sendResponse($response);
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 		}
