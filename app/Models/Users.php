@@ -12,7 +12,7 @@ class Users extends Model
     protected $table = 'users';
 
     protected $fillable = [
-        'uuid', 'login_id', 'first_name', 'last_name', 'email', 'school_uuid', 'school_name', 'school_color', 'detention_color', 'image', 'type', 'is_admin'
+        'uuid', 'login_id', 'first_name', 'last_name', 'email', 'school_uuid', 'school_name', 'school_color', 'detention_color', 'image', 'type'
     ];
 
     public function getImageNameAttribute()

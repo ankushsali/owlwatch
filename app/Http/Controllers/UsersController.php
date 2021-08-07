@@ -53,12 +53,12 @@ class UsersController extends Controller
 		$user->detention_color = $request->detention_color;
 		$user->image = "default.png";
 		$user->type = $request->type;
-		$user->is_admin = true;
 		$result = $user->save();
 
 		$school_user = new SchoolUsers;
 		$school_user->user_id = $user->uuid;
 		$school_user->school_id = $school->uuid;
+		$school_user->is_admin = "true";
 		$add_school_user = $school_user->save();
 
 		if ($result) {
@@ -74,7 +74,6 @@ class UsersController extends Controller
 	public function createEmployee(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
-			'type' => 'required',
 		]);
 
 		$school = Schools::where('uuid', $request->school_id)->first();
@@ -90,13 +89,12 @@ class UsersController extends Controller
 			$user->school_color = $school->school_color;
 			$user->detention_color = $school->detention_color;
 			$user->image = "default.png";
-			$user->type = $request->type;
-			$user->is_admin = false;
 			$result = $user->save();
 
 			$school_user = new SchoolUsers;
 			$school_user->user_id = $user->uuid;
 			$school_user->school_id = $school->uuid;
+			$school_user->is_admin = "false";
 			$add_school_user = $school_user->save();
 
 			if ($result) {
@@ -115,6 +113,7 @@ class UsersController extends Controller
 			'first_name' => 'required',
 			'last_name' => 'required',
 			'email' => 'required|email',
+			'type' => 'required',
 		]);
 
 		$user = Users::where('uuid', $request->user_id)->first();
@@ -123,6 +122,7 @@ class UsersController extends Controller
 				'first_name'=>$request->first_name,
 				'last_name'=>$request->last_name,
 				'email'=>$request->email,
+				'type'=>$request->type,
 			]);
 
 			if ($update) {
@@ -132,6 +132,25 @@ class UsersController extends Controller
 			}
 		}else{
 			return $this->sendResponse("Sorry, User not found!", 200, false);
+		}
+	}
+
+	public function getSchoolUsers(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required'
+		]);
+
+		$school_users = SchoolUsers::where('school_id', $request->school_id)->pluck('user_id')->toArray();
+
+		if (sizeof($school_users) > 0) {
+			$users = Users::whereIn('uuid', $school_users)->get();
+			if (sizeof($users) > 0) {
+				return $this->sendResponse($users);
+			}else{
+				return $this->sendResponse("Sorry, Users not found!", 200, false);
+			}
+		}else{
+			return $this->sendResponse("Sorry, Users not found!", 200, false);
 		}
 	}
 

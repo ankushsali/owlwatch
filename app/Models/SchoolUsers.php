@@ -12,7 +12,7 @@ class SchoolUsers extends Model
     protected $table = 'school_users';
 
     protected $fillable = [
-        'user_id', 'school_id'
+        'user_id', 'school_id', 'is_admin'
     ];
 
     public function School()
