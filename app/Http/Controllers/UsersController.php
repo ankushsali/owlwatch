@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Users;
 use App\Models\ApiToken;
+use App\Models\Schools;
+use App\Models\SchoolUsers;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -29,31 +31,107 @@ class UsersController extends Controller
 		}
 
 		$time = strtotime(Carbon::now());
-		$uuid = "user".$time.rand(10,99)*rand(10,99);
-		
-		$login_id = substr( str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"), 0, 10 );
+		$sch_uuid = "sch".$time.rand(10,99)*rand(10,99);
+		$school = new Schools;
+		$school->uuid = $sch_uuid;
+		$school->name = $request->school_name;
+		$school->school_color = $request->school_color;
+		$school->detention_color = $request->detention_color;
+		$add_school = $school->save();
 
+		$uuid = "user".$time.rand(10,99)*rand(10,99);
+		$login_id = substr( str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"), 0, 10 );
 		$user = new Users;
 		$user->uuid = $uuid;
 		$user->login_id = $login_id;
 		$user->first_name = $request->first_name;
 		$user->last_name = $request->last_name;
 		$user->email = $request->email;
+		$user->school_uuid = $sch_uuid;
 		$user->school_name = $request->school_name;
 		$user->school_color = $request->school_color;
 		$user->detention_color = $request->detention_color;
 		$user->image = "default.png";
 		$user->type = $request->type;
 		$user->is_admin = true;
-
 		$result = $user->save();
+
+		$school_user = new SchoolUsers;
+		$school_user->user_id = $user->uuid;
+		$school_user->school_id = $school->uuid;
+		$add_school_user = $school_user->save();
 
 		if ($result) {
 			$response['message'] = "Signup successfully!";
+			$user = Users::with('Schools.School')->where('uuid', $user->uuid)->first();
 			$response['data'] = $user;
 			return $this->sendResponse($response);
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function createEmployee(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'type' => 'required',
+		]);
+
+		$school = Schools::where('uuid', $request->school_id)->first();
+		if (!empty($school)) {
+			$time = strtotime(Carbon::now());
+			$uuid = "user".$time.rand(10,99)*rand(10,99);
+			$login_id = substr( str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"), 0, 10 );
+			$user = new Users;
+			$user->uuid = $uuid;
+			$user->login_id = $login_id;
+			$user->school_uuid = $school->uuid;
+			$user->school_name = $school->name;
+			$user->school_color = $school->school_color;
+			$user->detention_color = $school->detention_color;
+			$user->image = "default.png";
+			$user->type = $request->type;
+			$user->is_admin = false;
+			$result = $user->save();
+
+			$school_user = new SchoolUsers;
+			$school_user->user_id = $user->uuid;
+			$school_user->school_id = $school->uuid;
+			$add_school_user = $school_user->save();
+
+			if ($result) {
+				return $this->sendResponse($login_id);
+			}else{
+				return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+			}
+		}else{
+			return $this->sendResponse("Sorry, School not found!", 200, false);
+		}
+	}
+
+	public function updateProfile(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+			'first_name' => 'required',
+			'last_name' => 'required',
+			'email' => 'required|email',
+		]);
+
+		$user = Users::where('uuid', $request->user_id)->first();
+		if (!empty($user)) {
+			$update = Users::where('uuid', $request->user_id)->update([
+				'first_name'=>$request->first_name,
+				'last_name'=>$request->last_name,
+				'email'=>$request->email,
+			]);
+
+			if ($update) {
+				return $this->sendResponse("Profile updated successfully!");
+			}else{
+				return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+			}
+		}else{
+			return $this->sendResponse("Sorry, User not found!", 200, false);
 		}
 	}
 
@@ -63,6 +141,12 @@ class UsersController extends Controller
 		]);
 
 		$user = Users::where('login_id', $request->login_id)->first();
+		if ($user->first_name == '' && $user->last_name == '' && $user->email == '') {
+			$user->is_verified = false;
+		}else{
+			$user->is_verified = true;
+		}
+
 		if (!empty($user)) {
 			$token_string = hash("sha256", rand());
 			$where = ['user_id'=>$user->uuid];

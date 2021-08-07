@@ -13,8 +13,8 @@ class SchoolsController extends Controller
 	public function addSchool(Request $request){
 		$this->validate($request, [
 			'name' => 'required',
-			'address' => 'required',
-			'color' => 'required',
+			'school_color' => 'required',
+			'detention_color' => 'detention_color',
 		]);
 
 		$time = strtotime(Carbon::now());
@@ -23,7 +23,7 @@ class SchoolsController extends Controller
 		$school = new Schools;
 		$school->uuid = $uuid;
 		$school->name = $request->name;
-		$school->address = $request->address;
+		$school->school_color = $request->school_color;
 		$school->color = $request->color;
 		$result = $school->save();
 
@@ -39,14 +39,14 @@ class SchoolsController extends Controller
 			'user_id' => 'required',
 			'school_id' => 'required',
 			'role' => 'required',
-			'color' => 'required',
+			'school_color' => 'required',
 		]);
 
 		$assign_school = new SchoolUsers;
 		$assign_school->user_id = $request->user_id;
 		$assign_school->school_id = $request->school_id;
 		$assign_school->role = $request->role;
-		$assign_school->color = $request->color;
+		$assign_school->color = $request->school_color;
 		$result = $assign_school->save();
 
 		if ($result) {

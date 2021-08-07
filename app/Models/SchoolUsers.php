@@ -12,6 +12,11 @@ class SchoolUsers extends Model
     protected $table = 'school_users';
 
     protected $fillable = [
-        'user_id', 'school_id', 'role', 'color'
+        'user_id', 'school_id'
     ];
+
+    public function School()
+    {
+        return $this->hasOne('App\Models\Schools','uuid','school_id');
+    }
 }

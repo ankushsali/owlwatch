@@ -19,6 +19,8 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('user-signup',  ['uses'=>'UsersController@userSignUp']);
+    $router->post('create-employee',  ['uses'=>'UsersController@createEmployee']);
+    $router->post('update-profile',  ['uses'=>'UsersController@updateProfile']);
     $router->post('user-login',  ['uses'=>'UsersController@userLogin']);
     $router->post('assign-school',  ['uses'=>'SchoolsController@assignSchool']);
     $router->post('add-school',  ['uses'=>'SchoolsController@addSchool']);

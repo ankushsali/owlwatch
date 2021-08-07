@@ -12,6 +12,6 @@ class Schools extends Model
     protected $table = 'schools';
 
     protected $fillable = [
-        'uuid', 'name', 'address', 'color'
+        'uuid', 'name', 'school_color', 'detention_color'
     ];
 }
