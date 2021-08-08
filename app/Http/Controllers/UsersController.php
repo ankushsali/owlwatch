@@ -143,7 +143,7 @@ class UsersController extends Controller
 		$school_users = SchoolUsers::where('school_id', $request->school_id)->pluck('user_id')->toArray();
 
 		if (sizeof($school_users) > 0) {
-			$users = Users::whereIn('uuid', $school_users)->get();
+			$users = Users::with('Schools.School')->whereIn('uuid', $school_users)->get();
 			if (sizeof($users) > 0) {
 				return $this->sendResponse($users);
 			}else{
