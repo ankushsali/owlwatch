@@ -143,7 +143,7 @@ class UsersController extends Controller
 		$school_users = SchoolUsers::where('school_id', $request->school_id)->pluck('user_id')->toArray();
 
 		if (sizeof($school_users) > 0) {
-			$all_users = []
+			$all_users = [];
 			$ST = [];
 			$SC = [];
 			$CL = [];
