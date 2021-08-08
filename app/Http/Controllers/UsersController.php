@@ -143,9 +143,27 @@ class UsersController extends Controller
 		$school_users = SchoolUsers::where('school_id', $request->school_id)->pluck('user_id')->toArray();
 
 		if (sizeof($school_users) > 0) {
+			$all_users = []
+			$ST = [];
+			$SC = [];
+			$CL = [];
+			$SA = [];
 			$users = Users::with('Schools.School')->whereIn('uuid', $school_users)->get();
+			foreach ($users as $user) {
+				if ($user->type = "ST") {
+					$ST[] = $user;
+				}elseif ($user->type = "SC") {
+					$SC[] = $user;
+				}elseif ($user->type = "CL") {
+					$CL[] = $user;
+				}elseif ($user->type = "SA") {
+					$SA[] = $user;
+				}
+			}
+			$all_users = ['ST'=>$ST, 'SC'=>$SC, 'CL'=>$CL, 'SA'=>$SA];
+
 			if (sizeof($users) > 0) {
-				return $this->sendResponse($users);
+				return $this->sendResponse($all_users);
 			}else{
 				return $this->sendResponse("Sorry, Users not found!", 200, false);
 			}
