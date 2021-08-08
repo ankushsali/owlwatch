@@ -199,4 +199,30 @@ class UsersController extends Controller
 			return $this->sendResponse("Login failed!", 200, false);
 		}
 	}
+
+	public function updatePermission(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+			'school_id' => 'required',
+			'status' => 'required',
+		]);
+
+		$user = Users::where('uuid', $request->user_id)->first();
+		if (empty($user)) {
+			return $this->sendResponse("Sorry, User not found!", 200, false);
+		}
+
+		$school = Schools::where('uuid', $request->school_id)->first();
+		if (empty($school)) {
+			return $this->sendResponse("Sorry, School not found!", 200, false);
+		}
+
+		$update = SchoolUsers::where(['user_id'=>$request->user_id, 'school_id'=>$request->school_id])->update(['is_admin'=>$request->status]);
+
+		if ($update) {
+			return $this->sendResponse("Permission updated successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
 }
