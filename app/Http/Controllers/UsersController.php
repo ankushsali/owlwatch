@@ -159,7 +159,7 @@ class UsersController extends Controller
 			'login_id' => 'required'
 		]);
 
-		$user = Users::where('login_id', $request->login_id)->first();
+		$user = Users::with('Schools.School')->where('login_id', $request->login_id)->first();
 		if ($user->first_name == '' && $user->last_name == '' && $user->email == '') {
 			$user->is_verified = false;
 		}else{
