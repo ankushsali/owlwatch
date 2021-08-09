@@ -23,6 +23,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('update-profile',  ['uses'=>'UsersController@updateProfile']);
     $router->post('get-school-users',  ['uses'=>'UsersController@getSchoolUsers']);
     $router->post('update-permission',  ['uses'=>'UsersController@updatePermission']);
+    $router->post('revoke-user',  ['uses'=>'UsersController@revokeUser']);
     $router->post('user-login',  ['uses'=>'UsersController@userLogin']);
     $router->post('assign-school',  ['uses'=>'SchoolsController@assignSchool']);
     $router->post('add-school',  ['uses'=>'SchoolsController@addSchool']);

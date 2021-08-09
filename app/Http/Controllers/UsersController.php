@@ -116,8 +116,15 @@ class UsersController extends Controller
 			'type' => 'required',
 		]);
 
-		$user = Users::where('uuid', $request->user_id)->first();
+		$user = Users::with('Schools.School')->where('uuid', $request->user_id)->first();
 		if (!empty($user)) {
+			if ($request->email !== $user->email) {
+				$emailCheck = Users::where('email', $request->email)->first();
+				if (!empty($emailCheck)) {
+					return $this->sendResponse("Email already exist!", 200, false);
+				}
+			}
+			
 			$update = Users::where('uuid', $request->user_id)->update([
 				'first_name'=>$request->first_name,
 				'last_name'=>$request->last_name,
@@ -126,7 +133,7 @@ class UsersController extends Controller
 			]);
 
 			if ($update) {
-				return $this->sendResponse("Profile updated successfully!");
+				return $this->sendResponse($user);
 			}else{
 				return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 			}
@@ -150,13 +157,13 @@ class UsersController extends Controller
 			$SA = [];
 			$users = Users::with('Schools.School')->whereIn('uuid', $school_users)->get();
 			foreach ($users as $user) {
-				if ($user->type = "ST") {
+				if ($user->type == "ST") {
 					$ST[] = $user;
-				}elseif ($user->type = "SC") {
+				}elseif ($user->type == "SC") {
 					$SC[] = $user;
-				}elseif ($user->type = "CL") {
+				}elseif ($user->type == "CL") {
 					$CL[] = $user;
-				}elseif ($user->type = "SA") {
+				}elseif ($user->type == "SA") {
 					$SA[] = $user;
 				}
 			}
@@ -169,6 +176,57 @@ class UsersController extends Controller
 			}
 		}else{
 			return $this->sendResponse("Sorry, Users not found!", 200, false);
+		}
+	}
+
+	public function updatePermission(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+			'school_id' => 'required',
+			'status' => 'required',
+		]);
+
+		$user = Users::where('uuid', $request->user_id)->first();
+		if (empty($user)) {
+			return $this->sendResponse("Sorry, User not found!", 200, false);
+		}
+
+		$school = Schools::where('uuid', $request->school_id)->first();
+		if (empty($school)) {
+			return $this->sendResponse("Sorry, School not found!", 200, false);
+		}
+
+		$update = SchoolUsers::where(['user_id'=>$request->user_id, 'school_id'=>$request->school_id])->update(['is_admin'=>$request->status]);
+
+		if ($update) {
+			return $this->sendResponse("Permission updated successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function revokeUser(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+			'school_id' => 'required',
+		]);
+
+		$user = Users::where('uuid', $request->user_id)->first();
+		if (empty($user)) {
+			return $this->sendResponse("Sorry, User not found!", 200, false);
+		}
+
+		$school = Schools::where('uuid', $request->school_id)->first();
+		if (empty($school)) {
+			return $this->sendResponse("Sorry, School not found!", 200, false);
+		}
+
+		$revoke = SchoolUsers::where(['user_id'=>$request->user_id, 'school_id'=>$request->school_id])->delete();
+
+		if ($revoke) {
+			return $this->sendResponse("User revoked from school!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 		}
 	}
 
@@ -197,32 +255,6 @@ class UsersController extends Controller
 			return $this->sendResponse($user);
 		}else{
 			return $this->sendResponse("Login failed!", 200, false);
-		}
-	}
-
-	public function updatePermission(Request $request){
-		$this->validate($request, [
-			'user_id' => 'required',
-			'school_id' => 'required',
-			'status' => 'required',
-		]);
-
-		$user = Users::where('uuid', $request->user_id)->first();
-		if (empty($user)) {
-			return $this->sendResponse("Sorry, User not found!", 200, false);
-		}
-
-		$school = Schools::where('uuid', $request->school_id)->first();
-		if (empty($school)) {
-			return $this->sendResponse("Sorry, School not found!", 200, false);
-		}
-
-		$update = SchoolUsers::where(['user_id'=>$request->user_id, 'school_id'=>$request->school_id])->update(['is_admin'=>$request->status]);
-
-		if ($update) {
-			return $this->sendResponse("Permission updated successfully!");
-		}else{
-			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 		}
 	}
 }
