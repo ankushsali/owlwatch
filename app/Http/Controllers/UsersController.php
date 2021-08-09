@@ -74,6 +74,7 @@ class UsersController extends Controller
 	public function createEmployee(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
+			'is_admin' => 'required|in:true,false',
 		]);
 
 		$school = Schools::where('uuid', $request->school_id)->first();
@@ -94,7 +95,7 @@ class UsersController extends Controller
 			$school_user = new SchoolUsers;
 			$school_user->user_id = $user->uuid;
 			$school_user->school_id = $school->uuid;
-			$school_user->is_admin = "false";
+			$school_user->is_admin = $request->is_admin;
 			$add_school_user = $school_user->save();
 
 			if ($result) {
@@ -124,7 +125,7 @@ class UsersController extends Controller
 					return $this->sendResponse("Email already exist!", 200, false);
 				}
 			}
-			
+
 			$update = Users::where('uuid', $request->user_id)->update([
 				'first_name'=>$request->first_name,
 				'last_name'=>$request->last_name,
