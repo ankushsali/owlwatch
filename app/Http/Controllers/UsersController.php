@@ -134,7 +134,8 @@ class UsersController extends Controller
 			]);
 
 			if ($update) {
-				return $this->sendResponse($user);
+				$updatedUser = Users::with('Schools.School')->where('uuid', $request->user_id)->first();
+				return $this->sendResponse($updatedUser);
 			}else{
 				return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 			}
@@ -145,7 +146,8 @@ class UsersController extends Controller
 
 	public function getSchoolUsers(Request $request){
 		$this->validate($request, [
-			'school_id' => 'required'
+			'school_id' => 'required',
+			'user_id' => 'required',
 		]);
 
 		$school_users = SchoolUsers::where('school_id', $request->school_id)->pluck('user_id')->toArray();
@@ -158,14 +160,16 @@ class UsersController extends Controller
 			$SA = [];
 			$users = Users::with('Schools.School')->whereIn('uuid', $school_users)->get();
 			foreach ($users as $user) {
-				if ($user->type == "ST") {
-					$ST[] = $user;
-				}elseif ($user->type == "SC") {
-					$SC[] = $user;
-				}elseif ($user->type == "CL") {
-					$CL[] = $user;
-				}elseif ($user->type == "SA") {
-					$SA[] = $user;
+				if ($user->uuid != $request->user_id) {
+					if ($user->type == "ST") {
+						$ST[] = $user;
+					}elseif ($user->type == "SC") {
+						$SC[] = $user;
+					}elseif ($user->type == "CL") {
+						$CL[] = $user;
+					}elseif ($user->type == "SA") {
+						$SA[] = $user;
+					}
 				}
 			}
 			$all_users = ['ST'=>$ST, 'SC'=>$SC, 'CL'=>$CL, 'SA'=>$SA];
