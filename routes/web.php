@@ -40,5 +40,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('get-student-contacts',  ['uses'=>'StudentsController@getStudentContacts']);
     $router->post('get-student-data',  ['uses'=>'StudentsController@getStudentData']);
     $router->post('get-student-schedules',  ['uses'=>'StudentsController@getStudentSchedules']);
+    $router->post('get-single-student',  ['uses'=>'StudentsController@getSingleStudent']);
     /* StudentsController APIs End */
 });

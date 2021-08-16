@@ -189,4 +189,18 @@ class StudentsController extends Controller
 			return $this->sendResponse("Sorry, Student schedules not found!",200,false);
 		}
 	}
+
+	public function getSingleStudent(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'student_id' => 'required',
+		]);
+
+		$student = StudentData::with('StudentSchedules', 'StudentContacts')->where(['school_id'=>$request->school_id, 'student_id'=>$request->student_id])->first();
+		if (!empty($student)) {
+			return $this->sendResponse($student);
+		}else{
+			return $this->sendResponse("Sorry, Student not found!",200,false);
+		}
+	}
 }
