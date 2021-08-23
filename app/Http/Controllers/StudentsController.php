@@ -35,6 +35,11 @@ class StudentsController extends Controller
 		$this->validate($request, [
 			'school_id' => 'required',
 			'file' => 'required',
+			'student_id' => 'required',
+			'name' => 'required',
+			'phone' => 'required',
+			'phone_type' => 'required',
+			'email' => 'required',
 		]);
 
 		$result = 0;
@@ -46,7 +51,7 @@ class StudentsController extends Controller
 		$exist_flag = 0;
 
 		foreach ($studentArr as $student) {
-			if(!isset($student['Student ID']) || !isset($student['Name']) || !isset($student['Phone']) || !isset($student['Phone Type']) || !isset($student['Email'])){
+			if (!isset($student[$request->student_id]) || !isset($student[$request->name]) || !isset($student[$request->phone]) || !isset($student[$request->phone_type]) || !isset($student[$request->email])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
@@ -62,7 +67,7 @@ class StudentsController extends Controller
 			$result = $student_contact->save();
 		}
 
-		if($result != 0) {
+		if ($result != 0) {
 			return $this->sendResponse("Student contacts imported successfully.");
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!",200,false);
@@ -73,6 +78,16 @@ class StudentsController extends Controller
 		$this->validate($request, [
 			'school_id' => 'required',
 			'file' => 'required',
+			'first_name' => 'required',
+			'last_name' => 'required',
+			'student_id' => 'required',
+			'grade' => 'required',
+			'dbo' => 'required',
+			'counselor' => 'required',
+			'locker_number' => 'required',
+			'locker_combination' => 'required',
+			'parking_space' => 'required',
+			'license_plate' => 'required',
 		]);
 
 		$result = 0;
@@ -84,7 +99,7 @@ class StudentsController extends Controller
 		$exist_flag = 0;
 
 		foreach ($studentArr as $student) {
-			if(!isset($student['First Name']) || !isset($student['Last Name']) || !isset($student['Student ID']) || !isset($student['Grade']) || !isset($student['Date of Birth']) || !isset($student['Counselor']) || !isset($student['Locker Number']) || !isset($student['Locker Combination']) || !isset($student['Parking Space']) || !isset($student['License Plate'])){
+			if (!isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student['Date of Birth']) || !isset($student['Counselor']) || !isset($student['Locker Number']) || !isset($student['Locker Combination']) || !isset($student['Parking Space']) || !isset($student['License Plate'])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
@@ -105,7 +120,7 @@ class StudentsController extends Controller
 			$result = $student_data->save();
 		}
 
-		if($result != 0) {
+		if ($result != 0) {
 			return $this->sendResponse("Student data imported successfully.");
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!",200,false);
@@ -116,6 +131,12 @@ class StudentsController extends Controller
 		$this->validate($request, [
 			'school_id' => 'required',
 			'file' => 'required',
+			'student_id' => 'required',
+			'period' => 'required',
+			'teacher' => 'required',
+			'room_number' => 'required',
+			'class_name' => 'required',
+			'semester' => 'required',
 		]);
 
 		$result = 0;
@@ -127,10 +148,10 @@ class StudentsController extends Controller
 		$exist_flag = 0;
 
 		foreach ($studentArr as $student) {
-			if(!isset($student['Student ID']) || !isset($student['Period']) || !isset($student['Teacher']) || !isset($student['Room Number']) || !isset($student['Class Name']) || !isset($student['Semester'])){
+			if (!isset($student[$request->student_id]) || !isset($student[$request->period]) || !isset($student[$request->teacher]) || !isset($student[$request->room_number]) || !isset($student[$request->class_name]) || !isset($student[$request->semester])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
-
+			
 			$exist_flag = 1;
 
 			$student_schedule = new StudentSchedules;
@@ -144,7 +165,7 @@ class StudentsController extends Controller
 			$result = $student_schedule->save();
 		}
 
-		if($result != 0) {
+		if ($result != 0) {
 			return $this->sendResponse("Student schedules imported successfully.");
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!",200,false);

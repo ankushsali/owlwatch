@@ -31,6 +31,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     /* SchoolsController APIs Start */
     $router->post('assign-school',  ['uses'=>'SchoolsController@assignSchool']);
     $router->post('add-school',  ['uses'=>'SchoolsController@addSchool']);
+    $router->post('update-school',  ['uses'=>'SchoolsController@updateSchool']);
+    $router->post('add-location',  ['uses'=>'SchoolsController@addLocation']);
+    $router->post('update-location',  ['uses'=>'SchoolsController@updateLocation']);
+    $router->post('get-all-locations',  ['uses'=>'SchoolsController@getAllLocations']);
+    $router->post('delete-location',  ['uses'=>'SchoolsController@deleteLocation']);
+    $router->post('add-duration',  ['uses'=>'SchoolsController@addDuration']);
+    $router->post('update-duration',  ['uses'=>'SchoolsController@updateDuration']);
+    $router->post('get-all-durations',  ['uses'=>'SchoolsController@getAllDurations']);
+    $router->post('delete-duration',  ['uses'=>'SchoolsController@deleteDuration']);
+    $router->post('create-hall-pass',  ['uses'=>'SchoolsController@createHallPass']);
+    $router->post('get-all-hall-passes',  ['uses'=>'SchoolsController@getAllHallPasses']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */
