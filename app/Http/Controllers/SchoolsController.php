@@ -160,6 +160,7 @@ class SchoolsController extends Controller
 		$add_duration->uuid = $uuid;
 		$add_duration->school_id = $request->school_id;
 		$add_duration->duration = $request->duration;
+		$add_duration->default = 'NO';
 		$save_duration = $add_duration->save();
 
 		if ($save_duration) {
@@ -200,6 +201,23 @@ class SchoolsController extends Controller
 		}
 	}
 
+	public function setDefaultDuration(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'duration_id' => 'required'
+		]);
+
+		Durations::where('school_id',$request->school_id)->update(['default'=>'NO']);
+
+		$update = Durations::where(['uuid'=>$request->duration_id, 'school_id'=>$request->school_id])->update(['default'=>'YES']);
+
+		if ($update) {
+			return $this->sendResponse("Default duration set successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
 	public function deleteDuration(Request $request){
 		$this->validate($request, [
 			'duration_id' => 'required',
@@ -233,6 +251,7 @@ class SchoolsController extends Controller
 		$hall_pass->location = $request->location;
 		$hall_pass->duration = $request->duration;
 		$hall_pass->comments = $request->comments;
+		$hall_pass->status = 'N/A';
 		$save_hall_pass = $hall_pass->save();
 
 		if ($save_hall_pass) {
@@ -247,12 +266,41 @@ class SchoolsController extends Controller
 			'school_id' => 'required',
 		]);
 
-		$all_hallpass = HallPass::with('Location', 'Duration')->where('school_id', $request->school_id)->get();
+		$all_hallpass = [];
 
-		if (sizeof($all_hallpass) > 0) {
+		$hallpasses = HallPass::with('Location', 'Duration')->where('school_id', $request->school_id)->get();
+
+		if (sizeof($hallpasses) > 0) {
+			foreach ($hallpasses as $hallpass) {
+				$minutes = (time() - strtotime($hallpass->created_at)) / 60;
+				if ($hallpass->status == 'EX') {
+					$hallpass['expired'] = true;
+				}elseif ($minutes > $hallpass->Duration->duration) {
+					$hallpass['expired'] = true;
+				}else{
+					$hallpass['expired'] = false;
+				}
+				$all_hallpass = $hallpass;
+			}
+		
 			return $this->sendResponse($all_hallpass);
 		}else{
 			return $this->sendResponse("Sorry, Hall passes not found!", 200, false);
+		}
+	}
+
+	public function expireHallPass(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'hallpass_id' => 'required'
+		]);
+
+		$expire_hallpass = HallPass::where(['uuid'=>$request->hallpass_id, 'school_id'=>$request->school_id])->update(['status'=>'EX']);
+
+		if ($expire_hallpass) {
+			return $this->sendResponse("Hall pass expired successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Hall passes not found or Something went wrong!", 200, false);
 		}
 	}
 }

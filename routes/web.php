@@ -40,8 +40,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('update-duration',  ['uses'=>'SchoolsController@updateDuration']);
     $router->post('get-all-durations',  ['uses'=>'SchoolsController@getAllDurations']);
     $router->post('delete-duration',  ['uses'=>'SchoolsController@deleteDuration']);
+    $router->post('set-default-duration',  ['uses'=>'SchoolsController@setDefaultDuration']);
     $router->post('create-hall-pass',  ['uses'=>'SchoolsController@createHallPass']);
     $router->post('get-all-hall-passes',  ['uses'=>'SchoolsController@getAllHallPasses']);
+    $router->post('expire-hall-pass',  ['uses'=>'SchoolsController@expireHallPass']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */
