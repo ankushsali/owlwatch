@@ -24,4 +24,9 @@ class HallPass extends Model
     {
         return $this->hasOne('App\Models\Durations','uuid','duration');
     }
+
+    public function StudentData()
+    {
+        return $this->hasOne('App\Models\StudentData','student_id','student_name');
+    }
 }

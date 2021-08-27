@@ -268,7 +268,7 @@ class SchoolsController extends Controller
 
 		$all_hallpass = [];
 
-		$hallpasses = HallPass::with('Location', 'Duration')->where('school_id', $request->school_id)->get();
+		$hallpasses = HallPass::with('Location', 'Duration', 'StudentData')->where('school_id', $request->school_id)->get();
 
 		if (sizeof($hallpasses) > 0) {
 			foreach ($hallpasses as $hallpass) {
@@ -280,7 +280,7 @@ class SchoolsController extends Controller
 				}else{
 					$hallpass['expired'] = false;
 				}
-				$all_hallpass = $hallpass;
+				$all_hallpass[] = $hallpass;
 			}
 		
 			return $this->sendResponse($all_hallpass);
