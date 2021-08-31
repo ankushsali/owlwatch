@@ -234,6 +234,7 @@ class SchoolsController extends Controller
 
 	public function createHallPass(Request $request){
 		$this->validate($request, [
+			'user_id' => 'required',
 			'school_id' => 'required',
 			'student_name' => 'required',
 			'location' => 'required',
@@ -246,6 +247,7 @@ class SchoolsController extends Controller
 
 		$hall_pass = new HallPass;
 		$hall_pass->uuid = $uuid;
+		$hall_pass->user_id = $request->user_id;
 		$hall_pass->school_id = $request->school_id;
 		$hall_pass->student_name = $request->student_name;
 		$hall_pass->location = $request->location;
@@ -268,10 +270,11 @@ class SchoolsController extends Controller
 
 		$all_hallpass = [];
 
-		$hallpasses = HallPass::with('Location', 'Duration', 'StudentData')->where('school_id', $request->school_id)->get();
+		$hallpasses = HallPass::with('Location', 'Duration', 'StudentData', 'User')->where('school_id', $request->school_id)->get();
 
 		if (sizeof($hallpasses) > 0) {
 			foreach ($hallpasses as $hallpass) {
+				$expire_at = $hallpass->Duration->duration*60 + strtotime($hallpass->created_at);
 				$minutes = (time() - strtotime($hallpass->created_at)) / 60;
 				if ($hallpass->status == 'EX') {
 					$hallpass['expired'] = true;
@@ -280,6 +283,7 @@ class SchoolsController extends Controller
 				}else{
 					$hallpass['expired'] = false;
 				}
+				$hallpass['expire_at'] = date('Y-m-d H:i:s', $expire_at);
 				$all_hallpass[] = $hallpass;
 			}
 		

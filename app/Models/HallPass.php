@@ -12,7 +12,7 @@ class HallPass extends Model
     protected $table = 'hall_pass';
 
     protected $fillable = [
-        'uuid', 'school_id', 'student_name', 'location', 'duration', 'comments','status'
+        'uuid', 'user_id', 'school_id', 'student_name', 'location', 'duration', 'comments','status'
     ];
 
     public function Location()
@@ -28,5 +28,10 @@ class HallPass extends Model
     public function StudentData()
     {
         return $this->hasOne('App\Models\StudentData','student_id','student_name');
+    }
+
+    public function User()
+    {
+        return $this->hasOne('App\Models\Users','uuid','user_id');
     }
 }
