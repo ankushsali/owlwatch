@@ -9,6 +9,7 @@ use App\Models\SchoolUsers;
 use App\Models\Locations;
 use App\Models\Durations;
 use App\Models\HallPass;
+use App\Models\Semesters;
 use Carbon\Carbon;
 
 class SchoolsController extends Controller
@@ -17,7 +18,7 @@ class SchoolsController extends Controller
 		$this->validate($request, [
 			'name' => 'required',
 			'school_color' => 'required',
-			'detention_color' => 'detention_color',
+			'detention_color' => 'required',
 		]);
 
 		$time = strtotime(Carbon::now());
@@ -27,8 +28,16 @@ class SchoolsController extends Controller
 		$school->uuid = $uuid;
 		$school->name = $request->name;
 		$school->school_color = $request->school_color;
-		$school->color = $request->color;
+		$school->detention_color = $request->detention_color;
 		$result = $school->save();
+
+		$sem_uuid = "sem".$time.rand(10,99)*rand(10,99);
+
+		$semester = new Semesters;
+		$semester->uuid = $sem_uuid;
+		$semester->school_id = $school->uuid;
+		$semester->name = 'First Semester';
+		$semester->save();
 
 		if ($result) {
 			return $this->sendResponse("School added successfully!");
@@ -305,6 +314,57 @@ class SchoolsController extends Controller
 			return $this->sendResponse("Hall pass expired successfully!");
 		}else{
 			return $this->sendResponse("Sorry, Hall passes not found or Something went wrong!", 200, false);
+		}
+	}
+
+	public function createSemester(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'name' => 'required'
+		]);
+
+		$time = strtotime(Carbon::now());
+		$uuid = "sem".$time.rand(10,99)*rand(10,99);
+
+		$semester = new Semesters;
+		$semester->uuid = $uuid;
+		$semester->school_id = $request->school_id;
+		$semester->name = $request->name;
+		$save_semester = $semester->save();
+
+		if ($save_semester) {
+			return $this->sendResponse("Semester created successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function updateSemester(Request $request){
+		$this->validate($request, [
+			'semester_id' => 'required',
+			'name' => 'required'
+		]);
+
+		$update = Semesters::where('uuid', $request->semester_id)->update(['name'=>$request->name]);
+
+		if ($update) {
+			return $this->sendResponse("Semester updated successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function getSchoolSemesters(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required'
+		]);
+
+		$semesters = Semesters::where('school_id', $request->school_id)->get();
+
+		if (sizeof($semesters) > 0) {
+			return $this->sendResponse($semesters);
+		}else{
+			return $this->sendResponse("Sorry, Data not found!", 200, false);
 		}
 	}
 }

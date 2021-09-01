@@ -44,6 +44,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('create-hall-pass',  ['uses'=>'SchoolsController@createHallPass']);
     $router->post('get-all-hall-passes',  ['uses'=>'SchoolsController@getAllHallPasses']);
     $router->post('expire-hall-pass',  ['uses'=>'SchoolsController@expireHallPass']);
+    $router->post('create-semester',  ['uses'=>'SchoolsController@createSemester']);
+    $router->post('update-semester',  ['uses'=>'SchoolsController@updateSemester']);
+    $router->post('get-school-semesters',  ['uses'=>'SchoolsController@getSchoolSemesters']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */
