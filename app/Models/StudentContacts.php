@@ -12,6 +12,6 @@ class StudentContacts extends Model
     protected $table = 'student_contacts';
 
     protected $fillable = [
-        'school_id', 'student_id', 'name', 'phone', 'phone_type', 'email'
+        'school_id', 'semester_id', 'student_id', 'name', 'phone', 'phone_type', 'email'
     ];
 }

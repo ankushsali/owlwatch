@@ -10,6 +10,9 @@ use App\Models\Locations;
 use App\Models\Durations;
 use App\Models\HallPass;
 use App\Models\Semesters;
+use App\Models\StudentContacts;
+use App\Models\StudentData;
+use App\Models\StudentSchedules;
 use Carbon\Carbon;
 
 class SchoolsController extends Controller
@@ -213,7 +216,7 @@ class SchoolsController extends Controller
 	public function setDefaultDuration(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
-			'duration_id' => 'required'
+			'duration_id' => 'required',
 		]);
 
 		Durations::where('school_id',$request->school_id)->update(['default'=>'NO']);
@@ -285,13 +288,18 @@ class SchoolsController extends Controller
 			foreach ($hallpasses as $hallpass) {
 				$expire_at = $hallpass->Duration->duration*60 + strtotime($hallpass->created_at);
 				$minutes = (time() - strtotime($hallpass->created_at)) / 60;
+
 				if ($hallpass->status == 'EX') {
 					$hallpass['expired'] = true;
+					$hallpass['expire_in'] = 'expired';
 				}elseif ($minutes > $hallpass->Duration->duration) {
+					$hallpass['expire_in'] = 'expired';
 					$hallpass['expired'] = true;
 				}else{
+					$hallpass['expire_in'] = round($hallpass->Duration->duration - $minutes, 0);
 					$hallpass['expired'] = false;
 				}
+				
 				$hallpass['expire_at'] = date('Y-m-d H:i:s', $expire_at);
 				$all_hallpass[] = $hallpass;
 			}
@@ -305,7 +313,7 @@ class SchoolsController extends Controller
 	public function expireHallPass(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
-			'hallpass_id' => 'required'
+			'hallpass_id' => 'required',
 		]);
 
 		$expire_hallpass = HallPass::where(['uuid'=>$request->hallpass_id, 'school_id'=>$request->school_id])->update(['status'=>'EX']);
@@ -320,8 +328,11 @@ class SchoolsController extends Controller
 	public function createSemester(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
-			'name' => 'required'
+			'name' => 'required',
+			'pre_sem_data' => 'required|in:Y,N',
 		]);
+
+		$pre_semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
 		$time = strtotime(Carbon::now());
 		$uuid = "sem".$time.rand(10,99)*rand(10,99);
@@ -331,6 +342,61 @@ class SchoolsController extends Controller
 		$semester->school_id = $request->school_id;
 		$semester->name = $request->name;
 		$save_semester = $semester->save();
+
+		if ($request->pre_sem_data == 'Y') {
+			if (!empty($pre_semester)) {
+				$StudentContacts = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$pre_semester->uuid])->get();
+				if (sizeof($StudentContacts) > 0) {
+					foreach ($StudentContacts as $SC) {
+						$student_contact = new StudentContacts;
+						$student_contact->school_id = $SC->school_id;
+						$student_contact->semester_id = $semester->uuid;
+						$student_contact->student_id = $SC->student_id;
+						$student_contact->name = $SC->name;
+						$student_contact->phone = $SC->phone;
+						$student_contact->phone_type = $SC->phone_type;
+						$student_contact->email = $SC->email;
+						$student_contact->save();
+					}
+				}
+
+				$StudentData = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$pre_semester->uuid])->get();
+				if (sizeof($StudentData) > 0) {
+					foreach ($StudentData as $SD) {
+						$student_data = new StudentData;
+						$student_data->school_id = $SD->school_id;
+						$student_data->semester_id = $semester->uuid;
+						$student_data->first_name = $SD->first_name;
+						$student_data->last_name = $SD->last_name;
+						$student_data->student_id = $SD->student_id;
+						$student_data->grade = $SD->grade;
+						$student_data->dob = $SD->dob;
+						$student_data->counselor = $SD->counselor;
+						$student_data->locker_number = $SD->locker_number;
+						$student_data->locker_combination = $SD->locker_combination;
+						$student_data->parking_space = $SD->parking_space;
+						$student_data->license_plate = $SD->license_plate;
+						$student_data->save();
+					}
+				}
+
+				$StudentSchedules = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$pre_semester->uuid])->get();
+				if (sizeof($StudentSchedules) > 0) {
+					foreach ($StudentSchedules as $SS) {
+						$student_schedule = new StudentSchedules;
+						$student_schedule->school_id = $SS->school_id;
+						$student_schedule->semester_id = $semester->uuid;
+						$student_schedule->student_id = $SS->student_id;
+						$student_schedule->period = $SS->period;
+						$student_schedule->teacher = $SS->teacher;
+						$student_schedule->room_number = $SS->room_number;
+						$student_schedule->class_name = $SS->class_name;
+						$student_schedule->semester = $SS->semester;
+						$student_schedule->save();
+					}
+				}
+			}	
+		}
 
 		if ($save_semester) {
 			return $this->sendResponse("Semester created successfully!");
@@ -342,7 +408,7 @@ class SchoolsController extends Controller
 	public function updateSemester(Request $request){
 		$this->validate($request, [
 			'semester_id' => 'required',
-			'name' => 'required'
+			'name' => 'required',
 		]);
 
 		$update = Semesters::where('uuid', $request->semester_id)->update(['name'=>$request->name]);
@@ -356,7 +422,7 @@ class SchoolsController extends Controller
 
 	public function getSchoolSemesters(Request $request){
 		$this->validate($request, [
-			'school_id' => 'required'
+			'school_id' => 'required',
 		]);
 
 		$semesters = Semesters::where('school_id', $request->school_id)->get();

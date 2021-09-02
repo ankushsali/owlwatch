@@ -12,6 +12,6 @@ class StudentSchedules extends Model
     protected $table = 'student_schedules';
 
     protected $fillable = [
-        'school_id', 'student_id', 'period', 'teacher', 'room_number', 'class_name', 'semester'
+        'school_id', 'semester_id', 'student_id', 'period', 'teacher', 'room_number', 'class_name', 'semester'
     ];
 }

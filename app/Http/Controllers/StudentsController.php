@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\StudentContacts;
 use App\Models\StudentData;
 use App\Models\StudentSchedules;
+use App\Models\Semesters;
 use Carbon\Carbon;
 
 class StudentsController extends Controller
@@ -50,6 +51,8 @@ class StudentsController extends Controller
 		
 		$exist_flag = 0;
 
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
 		foreach ($studentArr as $student) {
 			if (!isset($student[$request->student_id]) || !isset($student[$request->name]) || !isset($student[$request->phone]) || !isset($student[$request->phone_type]) || !isset($student[$request->email])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
@@ -59,6 +62,7 @@ class StudentsController extends Controller
 
 			$student_contact = new StudentContacts;
 			$student_contact->school_id = $request->school_id;
+			$student_contact->semester_id = $semester->uuid;
 			$student_contact->student_id = $student['Student ID'];
 			$student_contact->name = $student['Name'];
 			$student_contact->phone = $student['Phone'];
@@ -98,6 +102,8 @@ class StudentsController extends Controller
 		
 		$exist_flag = 0;
 
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
 		foreach ($studentArr as $student) {
 			if (!isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student['Date of Birth']) || !isset($student['Counselor']) || !isset($student['Locker Number']) || !isset($student['Locker Combination']) || !isset($student['Parking Space']) || !isset($student['License Plate'])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
@@ -107,6 +113,7 @@ class StudentsController extends Controller
 
 			$student_data = new StudentData;
 			$student_data->school_id = $request->school_id;
+			$student_data->semester_id = $semester->uuid;
 			$student_data->first_name = $student['First Name'];
 			$student_data->last_name = $student['Last Name'];
 			$student_data->student_id = $student['Student ID'];
@@ -147,6 +154,8 @@ class StudentsController extends Controller
 		
 		$exist_flag = 0;
 
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
 		foreach ($studentArr as $student) {
 			if (!isset($student[$request->student_id]) || !isset($student[$request->period]) || !isset($student[$request->teacher]) || !isset($student[$request->room_number]) || !isset($student[$request->class_name]) || !isset($student[$request->semester])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
@@ -156,6 +165,7 @@ class StudentsController extends Controller
 
 			$student_schedule = new StudentSchedules;
 			$student_schedule->school_id = $request->school_id;
+			$student_schedule->semester_id = $semester->uuid;
 			$student_schedule->student_id = $student['Student ID'];
 			$student_schedule->period = $student['Period'];
 			$student_schedule->teacher = $student['Teacher'];

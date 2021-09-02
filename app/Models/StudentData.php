@@ -12,7 +12,7 @@ class StudentData extends Model
     protected $table = 'student_data';
 
     protected $fillable = [
-        'school_id', 'first_name', 'last_name', 'student_id', 'grade', 'dob', 'counselor', 'locker_number', 'locker_combination', 'parking_space', 'license_plate'
+        'school_id', 'semester_id', 'first_name', 'last_name', 'student_id', 'grade', 'dob', 'counselor', 'locker_number', 'locker_combination', 'parking_space', 'license_plate'
     ];
 
     public function StudentSchedules()
