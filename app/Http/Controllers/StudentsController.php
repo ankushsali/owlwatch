@@ -243,7 +243,9 @@ class StudentsController extends Controller
 			'student_id' => 'required',
 		]);
 
-		$student = StudentData::with('StudentSchedules', 'StudentContacts')->where(['school_id'=>$request->school_id, 'student_id'=>$request->student_id])->first();
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$student = StudentData::with('StudentSchedules', 'StudentContacts')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->first();
 		if (!empty($student)) {
 			return $this->sendResponse($student);
 		}else{
