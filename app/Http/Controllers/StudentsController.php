@@ -203,7 +203,9 @@ class StudentsController extends Controller
 			'school_id' => 'required',
 		]);
 
-		$result = StudentContacts::where('school_id', $request->school_id)->get();
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+		
+		$result = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
 		if (sizeof($result) > 0) {
 			return $this->sendResponse($result);
 		}else{
@@ -216,7 +218,9 @@ class StudentsController extends Controller
 			'school_id' => 'required',
 		]);
 
-		$result = StudentData::where('school_id', $request->school_id)->get();
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$result = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
 		if (sizeof($result) > 0) {
 			return $this->sendResponse($result);
 		}else{
@@ -229,7 +233,9 @@ class StudentsController extends Controller
 			'school_id' => 'required',
 		]);
 
-		$result = StudentSchedules::where('school_id', $request->school_id)->get();
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$result = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
 		if (sizeof($result) > 0) {
 			return $this->sendResponse($result);
 		}else{
