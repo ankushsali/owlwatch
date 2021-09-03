@@ -8,6 +8,7 @@ use App\Models\Users;
 use App\Models\ApiToken;
 use App\Models\Schools;
 use App\Models\SchoolUsers;
+use App\Models\Semesters;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -60,6 +61,13 @@ class UsersController extends Controller
 		$school_user->school_id = $school->uuid;
 		$school_user->is_admin = "true";
 		$add_school_user = $school_user->save();
+
+		$sem_uuid = "sem".$time.rand(10,99)*rand(10,99);
+		$semester = new Semesters;
+		$semester->uuid = $sem_uuid;
+		$semester->school_id = $school->uuid;
+		$semester->name = 'First Semester';
+		$semester->save();
 
 		if ($result) {
 			$response['message'] = "Signup successfully!";
