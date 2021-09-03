@@ -246,7 +246,12 @@ class StudentsController extends Controller
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
 		$student = StudentData::with('StudentSchedules', 'StudentContacts')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->first();
+
 		if (!empty($student)) {
+			$StudentSchedules = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->get();
+			$StudentContacts = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->get();
+			$student['student_schedules'] = $StudentSchedules;
+			$student['student_contacts'] = $StudentContacts;
 			return $this->sendResponse($student);
 		}else{
 			return $this->sendResponse("Sorry, Student not found!",200,false);
