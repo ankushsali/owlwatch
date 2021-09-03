@@ -245,7 +245,7 @@ class StudentsController extends Controller
 
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
-		$student = StudentData::with('StudentSchedules', 'StudentContacts')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->first();
+		$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->first();
 
 		if (!empty($student)) {
 			$StudentSchedules = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->get();
