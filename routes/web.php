@@ -41,9 +41,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('get-all-durations',  ['uses'=>'SchoolsController@getAllDurations']);
     $router->post('delete-duration',  ['uses'=>'SchoolsController@deleteDuration']);
     $router->post('set-default-duration',  ['uses'=>'SchoolsController@setDefaultDuration']);
-    $router->post('create-hall-pass',  ['uses'=>'SchoolsController@createHallPass']);
-    $router->post('get-all-hall-passes',  ['uses'=>'SchoolsController@getAllHallPasses']);
-    $router->post('expire-hall-pass',  ['uses'=>'SchoolsController@expireHallPass']);
     $router->post('create-semester',  ['uses'=>'SchoolsController@createSemester']);
     $router->post('update-semester',  ['uses'=>'SchoolsController@updateSemester']);
     $router->post('get-school-semesters',  ['uses'=>'SchoolsController@getSchoolSemesters']);
@@ -57,5 +54,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('get-student-data',  ['uses'=>'StudentsController@getStudentData']);
     $router->post('get-student-schedules',  ['uses'=>'StudentsController@getStudentSchedules']);
     $router->post('get-single-student',  ['uses'=>'StudentsController@getSingleStudent']);
+    $router->post('create-hall-pass',  ['uses'=>'StudentsController@createHallPass']);
+    $router->post('get-all-hall-passes',  ['uses'=>'StudentsController@getAllHallPasses']);
+    $router->post('expire-hall-pass',  ['uses'=>'StudentsController@expireHallPass']);
+    $router->post('get-periods',  ['uses'=>'StudentsController@getPeriods']);
     /* StudentsController APIs End */
 });

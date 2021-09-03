@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\StudentContacts;
 use App\Models\StudentData;
 use App\Models\StudentSchedules;
+use App\Models\HallPass;
 use App\Models\Semesters;
+use App\Models\Periods;
 use Carbon\Carbon;
 
 class StudentsController extends Controller
@@ -156,7 +158,9 @@ class StudentsController extends Controller
 
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
+		$periods = [];
 		foreach ($studentArr as $student) {
+			$periods[] = $student['Period'];
 			if (!isset($student[$request->student_id]) || !isset($student[$request->period]) || !isset($student[$request->teacher]) || !isset($student[$request->room_number]) || !isset($student[$request->class_name]) || !isset($student[$request->semester])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
@@ -173,6 +177,18 @@ class StudentsController extends Controller
 			$student_schedule->class_name = $student['Class Name'];
 			$student_schedule->semester = $student['Semester'];
 			$result = $student_schedule->save();
+		}
+
+		foreach (array_unique($periods) as $single_period) {
+			$time = strtotime(Carbon::now());
+			$uuid = "per".$time.rand(10,99)*rand(10,99);
+
+			$period = new Periods;
+			$period->uuid = $uuid;
+			$period->school_id = $request->school_id;
+			$period->semester_id = $semester->uuid;
+			$period->period = $single_period;
+			$period->save();
 		}
 
 		if ($result != 0) {
@@ -232,6 +248,108 @@ class StudentsController extends Controller
 			return $this->sendResponse($student);
 		}else{
 			return $this->sendResponse("Sorry, Student not found!",200,false);
+		}
+	}
+
+	public function createHallPass(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+			'school_id' => 'required',
+			'student_name' => 'required',
+			'location' => 'required',
+			'duration' => 'required',
+			'comments' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$time = strtotime(Carbon::now());
+		$uuid = "hall".$time.rand(10,99)*rand(10,99);
+
+		$hall_pass = new HallPass;
+		$hall_pass->uuid = $uuid;
+		$hall_pass->user_id = $request->user_id;
+		$hall_pass->school_id = $request->school_id;
+		$hall_pass->semester_id = $semester->uuid;
+		$hall_pass->student_name = $request->student_name;
+		$hall_pass->location = $request->location;
+		$hall_pass->duration = $request->duration;
+		$hall_pass->comments = $request->comments;
+		$hall_pass->status = 'N/A';
+		$save_hall_pass = $hall_pass->save();
+
+		if ($save_hall_pass) {
+			return $this->sendResponse("Hall pass created successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function getAllHallPasses(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+		]);
+
+		$all_hallpass = [];
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+		
+		$hallpasses = HallPass::with('Location', 'Duration', 'StudentData', 'User')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
+
+		if (sizeof($hallpasses) > 0) {
+			foreach ($hallpasses as $hallpass) {
+				$expire_at = $hallpass->Duration->duration*60 + strtotime($hallpass->created_at);
+				$minutes = (time() - strtotime($hallpass->created_at)) / 60;
+
+				if ($hallpass->status == 'EX') {
+					$hallpass['expired'] = true;
+					$hallpass['expire_in'] = 'expired';
+				}elseif ($minutes > $hallpass->Duration->duration) {
+					$hallpass['expire_in'] = 'expired';
+					$hallpass['expired'] = true;
+				}else{
+					$hallpass['expire_in'] = round($hallpass->Duration->duration - $minutes, 0);
+					$hallpass['expired'] = false;
+				}
+				
+				$hallpass['expire_at'] = date('Y-m-d H:i:s', $expire_at);
+				$all_hallpass[] = $hallpass;
+			}
+		
+			return $this->sendResponse($all_hallpass);
+		}else{
+			return $this->sendResponse("Sorry, Hall passes not found!", 200, false);
+		}
+	}
+
+	public function expireHallPass(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'hallpass_id' => 'required',
+		]);
+
+		$expire_hallpass = HallPass::where(['uuid'=>$request->hallpass_id, 'school_id'=>$request->school_id])->update(['status'=>'EX']);
+
+		if ($expire_hallpass) {
+			return $this->sendResponse("Hall pass expired successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Hall passes not found or Something went wrong!", 200, false);
+		}
+	}
+
+	public function getPeriods(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+		
+		$periods = Periods::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
+
+		if (sizeof($periods) > 0) {
+			return $this->sendResponse($periods);
+		}else{
+			return $this->sendResponse("Sorry, Periods not found!", 200, false);
 		}
 	}
 }

@@ -8,7 +8,6 @@ use App\Models\Schools;
 use App\Models\SchoolUsers;
 use App\Models\Locations;
 use App\Models\Durations;
-use App\Models\HallPass;
 use App\Models\Semesters;
 use App\Models\StudentContacts;
 use App\Models\StudentData;
@@ -244,87 +243,6 @@ class SchoolsController extends Controller
 		}
 	}
 
-	public function createHallPass(Request $request){
-		$this->validate($request, [
-			'user_id' => 'required',
-			'school_id' => 'required',
-			'student_name' => 'required',
-			'location' => 'required',
-			'duration' => 'required',
-			'comments' => 'required',
-		]);
-
-		$time = strtotime(Carbon::now());
-		$uuid = "hall".$time.rand(10,99)*rand(10,99);
-
-		$hall_pass = new HallPass;
-		$hall_pass->uuid = $uuid;
-		$hall_pass->user_id = $request->user_id;
-		$hall_pass->school_id = $request->school_id;
-		$hall_pass->student_name = $request->student_name;
-		$hall_pass->location = $request->location;
-		$hall_pass->duration = $request->duration;
-		$hall_pass->comments = $request->comments;
-		$hall_pass->status = 'N/A';
-		$save_hall_pass = $hall_pass->save();
-
-		if ($save_hall_pass) {
-			return $this->sendResponse("Hall pass created successfully!");
-		}else{
-			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
-		}
-	}
-
-	public function getAllHallPasses(Request $request){
-		$this->validate($request, [
-			'school_id' => 'required',
-		]);
-
-		$all_hallpass = [];
-
-		$hallpasses = HallPass::with('Location', 'Duration', 'StudentData', 'User')->where('school_id', $request->school_id)->get();
-
-		if (sizeof($hallpasses) > 0) {
-			foreach ($hallpasses as $hallpass) {
-				$expire_at = $hallpass->Duration->duration*60 + strtotime($hallpass->created_at);
-				$minutes = (time() - strtotime($hallpass->created_at)) / 60;
-
-				if ($hallpass->status == 'EX') {
-					$hallpass['expired'] = true;
-					$hallpass['expire_in'] = 'expired';
-				}elseif ($minutes > $hallpass->Duration->duration) {
-					$hallpass['expire_in'] = 'expired';
-					$hallpass['expired'] = true;
-				}else{
-					$hallpass['expire_in'] = round($hallpass->Duration->duration - $minutes, 0);
-					$hallpass['expired'] = false;
-				}
-				
-				$hallpass['expire_at'] = date('Y-m-d H:i:s', $expire_at);
-				$all_hallpass[] = $hallpass;
-			}
-		
-			return $this->sendResponse($all_hallpass);
-		}else{
-			return $this->sendResponse("Sorry, Hall passes not found!", 200, false);
-		}
-	}
-
-	public function expireHallPass(Request $request){
-		$this->validate($request, [
-			'school_id' => 'required',
-			'hallpass_id' => 'required',
-		]);
-
-		$expire_hallpass = HallPass::where(['uuid'=>$request->hallpass_id, 'school_id'=>$request->school_id])->update(['status'=>'EX']);
-
-		if ($expire_hallpass) {
-			return $this->sendResponse("Hall pass expired successfully!");
-		}else{
-			return $this->sendResponse("Sorry, Hall passes not found or Something went wrong!", 200, false);
-		}
-	}
-
 	public function createSemester(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
@@ -382,7 +300,10 @@ class SchoolsController extends Controller
 
 				$StudentSchedules = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$pre_semester->uuid])->get();
 				if (sizeof($StudentSchedules) > 0) {
+					$periods = [];
 					foreach ($StudentSchedules as $SS) {
+						$periods[] = $student['Period'];
+
 						$student_schedule = new StudentSchedules;
 						$student_schedule->school_id = $SS->school_id;
 						$student_schedule->semester_id = $semester->uuid;
@@ -393,6 +314,18 @@ class SchoolsController extends Controller
 						$student_schedule->class_name = $SS->class_name;
 						$student_schedule->semester = $SS->semester;
 						$student_schedule->save();
+					}
+
+					foreach (array_unique($periods) as $single_period) {
+						$time = strtotime(Carbon::now());
+						$period_uuid = "per".$time.rand(10,99)*rand(10,99);
+
+						$period = new Periods;
+						$period->uuid = $period_uuid;
+						$period->school_id = $request->school_id;
+						$period->semester_id = $semester->uuid;
+						$period->period = $single_period;
+						$period->save();
 					}
 				}
 			}	
