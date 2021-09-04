@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Semesters extends Model
+class Tardy extends Model
 {
     /*
      * The table associated with the model.
      */
-    protected $table = 'semesters';
+    protected $table = 'tardy';
 
     protected $fillable = [
-        'uuid', 'school_id', 'name', 'created_date'
+        'uuid', 'school_id', 'semester_id', 'period_id', 'student_id'
     ];
 }

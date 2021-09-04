@@ -247,6 +247,7 @@ class SchoolsController extends Controller
 		$this->validate($request, [
 			'school_id' => 'required',
 			'name' => 'required',
+			'created_date' => 'required',
 			'pre_sem_data' => 'required|in:Y,N',
 		]);
 
@@ -259,6 +260,7 @@ class SchoolsController extends Controller
 		$semester->uuid = $uuid;
 		$semester->school_id = $request->school_id;
 		$semester->name = $request->name;
+		$semester->created_date = $request->created_date;
 		$save_semester = $semester->save();
 
 		if ($request->pre_sem_data == 'Y') {
@@ -318,7 +320,7 @@ class SchoolsController extends Controller
 
 					foreach (array_unique($periods) as $single_period) {
 						$time = strtotime(Carbon::now());
-						$period_uuid = "per".$time.rand(10,99)*rand(10,99);
+						$period_uuid = "prd".$time.rand(10,99)*rand(10,99);
 
 						$period = new Periods;
 						$period->uuid = $period_uuid;

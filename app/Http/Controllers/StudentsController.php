@@ -10,6 +10,7 @@ use App\Models\StudentSchedules;
 use App\Models\HallPass;
 use App\Models\Semesters;
 use App\Models\Periods;
+use App\Models\Tardy;
 use Carbon\Carbon;
 
 class StudentsController extends Controller
@@ -181,7 +182,7 @@ class StudentsController extends Controller
 
 		foreach (array_unique($periods) as $single_period) {
 			$time = strtotime(Carbon::now());
-			$uuid = "per".$time.rand(10,99)*rand(10,99);
+			$uuid = "prd".$time.rand(10,99)*rand(10,99);
 
 			$period = new Periods;
 			$period->uuid = $uuid;
@@ -364,5 +365,43 @@ class StudentsController extends Controller
 		}else{
 			return $this->sendResponse("Sorry, Periods not found!", 200, false);
 		}
+	}
+
+	public function createTardy(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'period_id' => 'required',
+			'student_id' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$time = strtotime(Carbon::now());
+		$uuid = "trdy".$time.rand(10,99)*rand(10,99);
+
+		$tardy = new Tardy;
+		$tardy->uuid = $uuid;
+		$tardy->school_id = $request->school_id;
+		$tardy->semester_id = $semester->uuid;
+		$tardy->period_id = $request->period_id;
+		$tardy->student_id = $request->student_id;
+		$save_tardy = $tardy->save();
+
+		if ($save_tardy) {
+			return $this->sendResponse("Tardy created successfully");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function getAllTardy(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$all_tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
+		dd($all_tardy);
 	}
 }
