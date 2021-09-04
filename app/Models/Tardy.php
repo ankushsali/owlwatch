@@ -14,4 +14,19 @@ class Tardy extends Model
     protected $fillable = [
         'uuid', 'school_id', 'semester_id', 'period_id', 'student_id'
     ];
+
+    public function School()
+    {
+        return $this->hasOne('App\Models\Schools','uuid','school_id');
+    }
+
+    public function Semester()
+    {
+        return $this->hasOne('App\Models\Semesters','uuid','semester_id');
+    }
+
+    public function Period()
+    {
+        return $this->hasOne('App\Models\Periods','uuid','period_id');
+    }
 }

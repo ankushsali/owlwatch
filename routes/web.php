@@ -59,6 +59,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('expire-hall-pass',  ['uses'=>'StudentsController@expireHallPass']);
     $router->post('get-periods',  ['uses'=>'StudentsController@getPeriods']);
     $router->post('create-tardy',  ['uses'=>'StudentsController@createTardy']);
-    $router->post('get-all-tardy',  ['uses'=>'StudentsController@getAllTardy']);
+    $router->post('get-period-tardy',  ['uses'=>'StudentsController@getPeriodTardy']);
     /* StudentsController APIs End */
 });

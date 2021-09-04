@@ -222,8 +222,17 @@ class StudentsController extends Controller
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
 		$result = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
+
+		$all_students = [];
 		if (sizeof($result) > 0) {
-			return $this->sendResponse($result);
+			foreach ($result as $student) {
+				$tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student->student_id])->get();
+				$student['tardy_count'] = sizeof($tardy);
+
+				$all_students[] = $student;
+			}
+
+			return $this->sendResponse($all_students);
 		}else{
 			return $this->sendResponse("Sorry, Student data not found!",200,false);
 		}
@@ -257,6 +266,8 @@ class StudentsController extends Controller
 		if (!empty($student)) {
 			$StudentSchedules = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->get();
 			$StudentContacts = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->get();
+			$tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->get();
+			$student['tardy_count'] = sizeof($tardy);
 			$student['student_schedules'] = $StudentSchedules;
 			$student['student_contacts'] = $StudentContacts;
 			return $this->sendResponse($student);
@@ -394,14 +405,32 @@ class StudentsController extends Controller
 		}
 	}
 
-	public function getAllTardy(Request $request){
+	public function getPeriodTardy(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
+			'period_id' => 'required',
 		]);
 
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
-		$all_tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
-		dd($all_tardy);
+		$get_tardy = Tardy::with('School', 'Semester', 'Period')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'period_id'=>$request->period_id])->get();
+
+		if (sizeof($get_tardy) > 1) {
+			$all_tardy = [];
+			foreach ($get_tardy as $tardy) {
+				$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$tardy->student_id])->first();
+				$StudentSchedules = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$tardy->student_id])->get();
+				$StudentContacts = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$tardy->student_id])->get();
+				$student['student_schedules'] = $StudentSchedules;
+				$student['student_contacts'] = $StudentContacts;
+
+				$tardy['student_info'] = $student;
+				$all_tardy[] = $tardy;
+			}
+
+			return $this->sendResponse($all_tardy);
+		}else{
+			return $this->sendResponse("Sorry, Tardy not found!", 200, false);
+		}
 	}
 }
