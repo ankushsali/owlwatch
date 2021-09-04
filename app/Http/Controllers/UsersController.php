@@ -67,6 +67,7 @@ class UsersController extends Controller
 		$semester->uuid = $sem_uuid;
 		$semester->school_id = $school->uuid;
 		$semester->name = 'First Semester';
+		$semester->created_date = date('Y-m-d H:i:s');
 		$semester->save();
 
 		if ($result) {

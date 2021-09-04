@@ -433,4 +433,28 @@ class StudentsController extends Controller
 			return $this->sendResponse("Sorry, Tardy not found!", 200, false);
 		}
 	}
+
+	public function tardyChartData(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+		]);
+
+		$tardy_array = [];
+
+	    $i = 0;
+	    while ($i < 8) {
+	        $today = Carbon::today();
+	        $date = $today->subDays($i)->format('Y-m-d');
+
+	        $semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+	        
+	        $tardy = Tardy::where('created_at', 'like', '%'.$date.'%')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->count();
+
+	        $tardy_count = ['date'=>$date, 'tardy_count'=>$tardy];
+	        array_push($tardy_array, $tardy_count);
+	        $i++;
+	    }
+
+	    return $this->sendResponse($tardy_array);
+	}
 }
