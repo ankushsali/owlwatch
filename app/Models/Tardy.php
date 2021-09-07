@@ -12,7 +12,7 @@ class Tardy extends Model
     protected $table = 'tardy';
 
     protected $fillable = [
-        'uuid', 'school_id', 'semester_id', 'period_id', 'student_id'
+        'uuid', 'school_id', 'semester_id', 'period_id', 'student_id', 'is_excuse'
     ];
 
     public function School()

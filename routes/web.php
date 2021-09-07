@@ -61,5 +61,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('create-tardy',  ['uses'=>'StudentsController@createTardy']);
     $router->post('get-period-tardy',  ['uses'=>'StudentsController@getPeriodTardy']);
     $router->post('tardy-chart-data',  ['uses'=>'StudentsController@tardyChartData']);
+    $router->post('update-tardy-excuse',  ['uses'=>'StudentsController@updateTardyExcuse']);
     /* StudentsController APIs End */
 });

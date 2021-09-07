@@ -396,6 +396,7 @@ class StudentsController extends Controller
 		$tardy->semester_id = $semester->uuid;
 		$tardy->period_id = $request->period_id;
 		$tardy->student_id = $request->student_id;
+		$tardy->is_excuse = 'false';
 		$save_tardy = $tardy->save();
 
 		if ($save_tardy) {
@@ -447,7 +448,7 @@ class StudentsController extends Controller
 	        $date = $today->subDays($i)->format('Y-m-d');
 
 	        $semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
-	        
+
 	        $tardy = Tardy::where('created_at', 'like', '%'.$date.'%')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->count();
 
 	        $tardy_count = ['date'=>$date, 'tardy_count'=>$tardy];
@@ -456,5 +457,21 @@ class StudentsController extends Controller
 	    }
 
 	    return $this->sendResponse($tardy_array);
+	}
+
+	public function updateTardyExcuse(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'tardy_id' => 'required',
+			'is_excuse' => 'required|in:true,false',
+		]);
+
+		$update = Tardy::where(['school_id'=>$request->school_id, 'uuid'=>$request->tardy_id])->update(['is_excuse'=>$request->is_excuse]);
+
+		if ($update) {
+			return $this->sendResponse('Tardy updated successfully!');
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
 	}
 }
