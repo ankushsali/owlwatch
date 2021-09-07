@@ -44,6 +44,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('create-semester',  ['uses'=>'SchoolsController@createSemester']);
     $router->post('update-semester',  ['uses'=>'SchoolsController@updateSemester']);
     $router->post('get-school-semesters',  ['uses'=>'SchoolsController@getSchoolSemesters']);
+    $router->post('add-detention-reason',  ['uses'=>'SchoolsController@addDetentionReason']);
+    $router->post('get-detention-reasons',  ['uses'=>'SchoolsController@getDetentionReasons']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */
