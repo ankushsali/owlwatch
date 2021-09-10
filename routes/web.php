@@ -46,8 +46,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('get-school-semesters',  ['uses'=>'SchoolsController@getSchoolSemesters']);
     $router->post('add-detention-reason',  ['uses'=>'SchoolsController@addDetentionReason']);
     $router->post('get-detention-reasons',  ['uses'=>'SchoolsController@getDetentionReasons']);
-    $router->post('create-detention',  ['uses'=>'SchoolsController@createDetention']);
-    $router->post('get-detentions',  ['uses'=>'SchoolsController@getDetentions']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */
@@ -66,5 +64,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('get-period-tardy',  ['uses'=>'StudentsController@getPeriodTardy']);
     $router->post('tardy-chart-data',  ['uses'=>'StudentsController@tardyChartData']);
     $router->post('update-tardy-excuse',  ['uses'=>'StudentsController@updateTardyExcuse']);
+    $router->post('create-detention',  ['uses'=>'StudentsController@createDetention']);
+    $router->post('get-detentions',  ['uses'=>'StudentsController@getDetentions']);
+    $router->post('update-detention-serve',  ['uses'=>'StudentsController@updateDetentionServe']);
     /* StudentsController APIs End */
 });

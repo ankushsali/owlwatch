@@ -11,6 +11,7 @@ use App\Models\HallPass;
 use App\Models\Semesters;
 use App\Models\Periods;
 use App\Models\Tardy;
+use App\Models\Detentions;
 use Carbon\Carbon;
 
 class StudentsController extends Controller
@@ -470,6 +471,68 @@ class StudentsController extends Controller
 
 		if ($update) {
 			return $this->sendResponse('Tardy updated successfully!');
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function createDetention(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'student_id' => 'required',
+			'reason_id' => 'required',
+			'create_date' => 'nullable',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$time = strtotime(Carbon::now());
+		$uuid = "det".$time.rand(10,99)*rand(10,99);
+
+		$detention = new Detentions;
+		$detention->uuid = $uuid;
+		$detention->school_id = $request->school_id;
+		$detention->semester_id = $semester->uuid;
+		$detention->student_id = $request->student_id;
+		$detention->reason_id = $request->reason_id;
+		$detention->create_date = $request->create_date;
+		$detention->serverd = 'false';
+		$save_detentions = $detention->save();
+
+		if ($save_detentions) {
+			return $this->sendResponse("Detention added successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function getDetentions(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$detentions = Detentions::with('School', 'Semester', 'StudentData', 'Reason')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
+
+		if (sizeof($detentions) > 0) {
+			return $this->sendResponse($detentions);
+		}else{
+			return $this->sendResponse("Sorry, Data not found!", 200, false);
+		}
+	}
+
+	public function updateDetentionServe(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'detention_id' => 'required',
+			'serverd' => 'required|in:true,false',
+		]);
+
+		$update = Detentions::where(['school_id'=>$request->school_id, 'uuid'=>$request->detention_id])->update(['serverd'=>$request->serverd]);
+
+		if ($update) {
+			return $this->sendResponse("Detention updated successfully!");
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 		}
