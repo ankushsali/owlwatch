@@ -416,7 +416,7 @@ class StudentsController extends Controller
 
 		$get_tardy = Tardy::with('School', 'Semester', 'Period')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'period_id'=>$request->period_id])->get();
 
-		if (sizeof($get_tardy) > 1) {
+		if (sizeof($get_tardy) > 0) {
 			$all_tardy = [];
 			foreach ($get_tardy as $tardy) {
 				$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$tardy->student_id])->first();
