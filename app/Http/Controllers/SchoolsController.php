@@ -13,6 +13,7 @@ use App\Models\StudentContacts;
 use App\Models\StudentData;
 use App\Models\StudentSchedules;
 use App\Models\DetentionReasons;
+use App\Models\Detentions;
 use Carbon\Carbon;
 
 class SchoolsController extends Controller
@@ -391,7 +392,7 @@ class SchoolsController extends Controller
 		if ($save_reason) {
 			return $this->sendResponse("Detention reason added successfully!");
 		}else{
-			return $this->sendResponse("Sorry, Data not found!", 200, false);
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 		}
 	}
 
@@ -406,6 +407,52 @@ class SchoolsController extends Controller
 
 		if (sizeof($reasons) > 0) {
 			return $this->sendResponse($reasons);
+		}else{
+			return $this->sendResponse("Sorry, Data not found!", 200, false);
+		}
+	}
+
+	public function createDetention(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'student_id' => 'required',
+			'reason_id' => 'required',
+			'create_date' => 'nullable',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$time = strtotime(Carbon::now());
+		$uuid = "det".$time.rand(10,99)*rand(10,99);
+
+		$detention = new Detentions;
+		$detention->uuid = $uuid;
+		$detention->school_id = $request->school_id;
+		$detention->semester_id = $semester->uuid;
+		$detention->student_id = $request->student_id;
+		$detention->reason_id = $request->reason_id;
+		$detention->create_date = $request->create_date;
+		$detention->serverd = 'false';
+		$save_detentions = $detention->save();
+
+		if ($save_detentions) {
+			return $this->sendResponse("Detention added successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function getDetentions(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$detentions = Detentions::with('School', 'Semester', 'StudentData', 'Reason')->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->get();
+
+		if (sizeof($detentions) > 0) {
+			return $this->sendResponse($detentions);
 		}else{
 			return $this->sendResponse("Sorry, Data not found!", 200, false);
 		}

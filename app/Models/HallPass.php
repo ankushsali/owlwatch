@@ -12,7 +12,7 @@ class HallPass extends Model
     protected $table = 'hall_pass';
 
     protected $fillable = [
-        'uuid', 'user_id', 'school_id', 'student_name', 'location', 'duration', 'comments','status'
+        'uuid', 'user_id', 'school_id', 'student_name', 'location', 'duration', 'comments', 'status'
     ];
 
     public function Location()
