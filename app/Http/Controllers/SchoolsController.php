@@ -395,6 +395,31 @@ class SchoolsController extends Controller
 		}
 	}
 
+	public function createDetentionReason(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'reason' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$time = strtotime(Carbon::now());
+		$uuid = "rsn".$time.rand(10,99)*rand(10,99);
+
+		$reason = new DetentionReasons;
+		$reason->uuid = $uuid;
+		$reason->school_id = $request->school_id;
+		$reason->semester_id = $semester->uuid;
+		$reason->name = $request->reason;
+		$save_reason = $reason->save();
+
+		if ($save_reason) {
+			return $this->sendResponse("Detention reason added successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
 	public function getDetentionReasons(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
