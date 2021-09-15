@@ -12,7 +12,7 @@ class Detentions extends Model
     protected $table = 'detentions';
 
     protected $fillable = [
-        'uuid', 'school_id', 'semester_id', 'student_id', 'reason_id', 'create_date', 'serverd'
+        'uuid', 'school_id', 'semester_id', 'student_id', 'reason_id', 'create_date', 'serverd', 'comment'
     ];
 
     public function School()

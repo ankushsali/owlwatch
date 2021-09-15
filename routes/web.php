@@ -69,4 +69,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('get-detentions',  ['uses'=>'StudentsController@getDetentions']);
     $router->post('update-detention-serve',  ['uses'=>'StudentsController@updateDetentionServe']);
     /* StudentsController APIs End */
+
+    /* SettingsController APIs Start */
+    $router->post('update-tardy-setting',  ['uses'=>'SettingsController@updateTardySetting']);
+    $router->post('get-setting',  ['uses'=>'SettingsController@getSetting']);
+    /* SettingsController APIs End */
 });

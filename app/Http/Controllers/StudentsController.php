@@ -12,6 +12,7 @@ use App\Models\Semesters;
 use App\Models\Periods;
 use App\Models\Tardy;
 use App\Models\Detentions;
+use App\Models\Settings;
 use Carbon\Carbon;
 
 class StudentsController extends Controller
@@ -42,9 +43,9 @@ class StudentsController extends Controller
 			'file' => 'required',
 			'student_id' => 'required',
 			'name' => 'required',
-			'phone' => 'required',
-			'phone_type' => 'required',
-			'email' => 'required',
+			'phone' => 'nullable',
+			'phone_type' => 'nullable',
+			'email' => 'nullable',
 		]);
 
 		$result = 0;
@@ -58,7 +59,7 @@ class StudentsController extends Controller
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
 		foreach ($studentArr as $student) {
-			if (!isset($student[$request->student_id]) || !isset($student[$request->name]) || !isset($student[$request->phone]) || !isset($student[$request->phone_type]) || !isset($student[$request->email])) {
+			if (!isset($student[$request->student_id]) || !isset($student[$request->name])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
@@ -89,13 +90,13 @@ class StudentsController extends Controller
 			'first_name' => 'required',
 			'last_name' => 'required',
 			'student_id' => 'required',
-			'grade' => 'required',
-			'dbo' => 'required',
-			'counselor' => 'required',
-			'locker_number' => 'required',
-			'locker_combination' => 'required',
-			'parking_space' => 'required',
-			'license_plate' => 'required',
+			'grade' => 'nullable',
+			'dbo' => 'nullable',
+			'counselor' => 'nullable',
+			'locker_number' => 'nullable',
+			'locker_combination' => 'nullable',
+			'parking_space' => 'nullable',
+			'license_plate' => 'nullable',
 		]);
 
 		$result = 0;
@@ -109,7 +110,7 @@ class StudentsController extends Controller
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
 		foreach ($studentArr as $student) {
-			if (!isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student[$request->first_name]) || !isset($student['Date of Birth']) || !isset($student['Counselor']) || !isset($student['Locker Number']) || !isset($student['Locker Combination']) || !isset($student['Parking Space']) || !isset($student['License Plate'])) {
+			if (!isset($student[$request->first_name]) || !isset($student[$request->last_name]) || !isset($student[$request->student_id])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
@@ -144,10 +145,10 @@ class StudentsController extends Controller
 			'file' => 'required',
 			'student_id' => 'required',
 			'period' => 'required',
-			'teacher' => 'required',
-			'room_number' => 'required',
+			'teacher' => 'nullable',
+			'room_number' => 'nullable',
 			'class_name' => 'required',
-			'semester' => 'required',
+			'semester' => 'nullable',
 		]);
 
 		$result = 0;
@@ -163,7 +164,7 @@ class StudentsController extends Controller
 		$periods = [];
 		foreach ($studentArr as $student) {
 			$periods[] = $student['Period'];
-			if (!isset($student[$request->student_id]) || !isset($student[$request->period]) || !isset($student[$request->teacher]) || !isset($student[$request->room_number]) || !isset($student[$request->class_name]) || !isset($student[$request->semester])) {
+			if (!isset($student[$request->student_id]) || !isset($student[$request->period]) || !isset($student[$request->class_name])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 			
@@ -388,6 +389,15 @@ class StudentsController extends Controller
 
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
+		$tardy_setting = Settings::where(['school_id'=>$request->school_id, 'name'=>'tardy_limit'])->first();
+
+		if ($tardy_setting->status == 'E') {
+			$tardy_count = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$request->student_id])->count();
+			if ($tardy_count >= $tardy_setting->value) {
+				return $this->sendResponse("Tardy limit is over, Ned to create detention!", 200, false);
+			}
+		}
+
 		$time = strtotime(Carbon::now());
 		$uuid = "trdy".$time.rand(10,99)*rand(10,99);
 
@@ -482,6 +492,7 @@ class StudentsController extends Controller
 			'student_id' => 'required',
 			'reason_id' => 'required',
 			'create_date' => 'nullable',
+			'comment' => 'required',
 		]);
 
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
@@ -496,6 +507,7 @@ class StudentsController extends Controller
 		$detention->student_id = $request->student_id;
 		$detention->reason_id = $request->reason_id;
 		$detention->create_date = $request->create_date;
+		$detention->comment = $request->comment;
 		$detention->serverd = 'false';
 		$save_detentions = $detention->save();
 

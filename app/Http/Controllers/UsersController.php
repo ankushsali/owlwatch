@@ -9,6 +9,7 @@ use App\Models\ApiToken;
 use App\Models\Schools;
 use App\Models\SchoolUsers;
 use App\Models\Semesters;
+use App\Models\Settings;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -68,7 +69,14 @@ class UsersController extends Controller
 		$semester->school_id = $school->uuid;
 		$semester->name = 'First Semester';
 		$semester->created_date = date('Y-m-d H:i:s');
-		$semester->save();
+		$save_semester = $semester->save();
+
+		$tardy_setting = new Settings;
+		$tardy_setting->school_id = $school->uuid;
+		$tardy_setting->name = 'tardy_limit';
+		$tardy_setting->value = '3';
+		$tardy_setting->status = 'D';
+		$save_tardy_setting = $tardy_setting->save();
 
 		if ($result) {
 			$response['message'] = "Signup successfully!";
