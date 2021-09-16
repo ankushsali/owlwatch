@@ -10,6 +10,7 @@ use App\Models\Schools;
 use App\Models\SchoolUsers;
 use App\Models\Semesters;
 use App\Models\Settings;
+use App\Models\UserImages;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -277,6 +278,49 @@ class UsersController extends Controller
 			return $this->sendResponse($user);
 		}else{
 			return $this->sendResponse("Login failed!", 200, false);
+		}
+	}
+
+	public function uploadStudentImage(Request $request){
+		$this->validate($request, [
+			'student_id' => 'required',
+			'school_id' => 'required',
+			'image' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$path = app()->basePath('public/user-images/');
+		$fileName = $this->upload($path, $request->image);
+		$image = new UserImages;
+		$image->student_id = $request->student_id;
+		$image->school_id = $request->school_id;
+		$image->semester_id = $semester->uuid;
+		$image->image = $fileName;
+		$save_image = $image->save();
+
+		if ($save_image) {
+			return $this->sendResponse("Image uploaded successfully!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function getStudentImage(Request $request){
+		$this->validate($request, [
+			'student_id' => 'required',
+			'school_id' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$image = UserImages::where(['student_id'=>$request->student_id, 'school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->orderBy('created_at', 'desc')->first();
+
+		if (!empty($image)) {
+			$image['image'] = env('APP_URL').'public/user-images/'.$image->image;
+			return $this->sendResponse($image);
+		}else{
+			return $this->sendResponse("Sorry, Image not found!", 200, false);
 		}
 	}
 }

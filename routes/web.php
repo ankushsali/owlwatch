@@ -26,6 +26,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('update-permission',  ['uses'=>'UsersController@updatePermission']);
     $router->post('revoke-user',  ['uses'=>'UsersController@revokeUser']);
     $router->post('user-login',  ['uses'=>'UsersController@userLogin']);
+    $router->post('upload-student-image',  ['uses'=>'UsersController@uploadStudentImage']);
+    $router->post('get-student-image',  ['uses'=>'UsersController@getStudentImage']);
     /* UsersController APIs End */
 
     /* SchoolsController APIs Start */

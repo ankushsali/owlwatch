@@ -24,7 +24,7 @@ class Controller extends BaseController
         ]);
     }
 
-    public function singleImageUpload($myPath,$image)
+    public function upload($myPath,$image)
     {
         $folderPath = $myPath;//app()->basePath('public/');
         $fileName =  rand().'Image.png';
