@@ -22,6 +22,7 @@ class SchoolsController extends Controller
 			'name' => 'required',
 			'school_color' => 'required',
 			'detention_color' => 'required',
+			'user_id' => 'required',
 		]);
 
 		$time = strtotime(Carbon::now());
@@ -34,13 +35,26 @@ class SchoolsController extends Controller
 		$school->detention_color = $request->detention_color;
 		$result = $school->save();
 
-		$sem_uuid = "sem".$time.rand(10,99)*rand(10,99);
+		$school_user = new SchoolUsers;
+		$school_user->user_id = $request->user_id;
+		$school_user->school_id = $school->uuid;
+		$school_user->is_admin = "true";
+		$add_school_user = $school_user->save();
 
+		$sem_uuid = "sem".$time.rand(10,99)*rand(10,99);
 		$semester = new Semesters;
 		$semester->uuid = $sem_uuid;
 		$semester->school_id = $school->uuid;
 		$semester->name = 'First Semester';
-		$semester->save();
+		$semester->created_date = date('Y-m-d H:i:s');
+		$save_semester = $semester->save();
+
+		$tardy_setting = new Settings;
+		$tardy_setting->school_id = $school->uuid;
+		$tardy_setting->name = 'tardy_limit';
+		$tardy_setting->value = '3';
+		$tardy_setting->status = 'D';
+		$save_tardy_setting = $tardy_setting->save();
 
 		if ($result) {
 			return $this->sendResponse("School added successfully!");
