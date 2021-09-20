@@ -59,6 +59,8 @@ class StudentsController extends Controller
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
 		foreach ($studentArr as $student) {
+			StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->delete();
+
 			if (!isset($student[$request->student_id]) || !isset($student[$request->name])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
@@ -163,6 +165,8 @@ class StudentsController extends Controller
 
 		$periods = [];
 		foreach ($studentArr as $student) {
+			StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->delete();
+			
 			$periods[] = $student['Period'];
 			if (!isset($student[$request->student_id]) || !isset($student[$request->period]) || !isset($student[$request->class_name])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
