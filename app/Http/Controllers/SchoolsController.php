@@ -453,7 +453,7 @@ class SchoolsController extends Controller
 		}
 	}
 
-	public function testPDF(Request $request){
+	public function tardyRegularReport(Request $request){
 		$this->validate($request, [
 			'school_id' => 'required',
 			'start_date' => 'required',
