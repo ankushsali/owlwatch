@@ -13,7 +13,10 @@ use App\Models\StudentContacts;
 use App\Models\StudentData;
 use App\Models\StudentSchedules;
 use App\Models\DetentionReasons;
+use App\Models\Tardy;
+use App\Models\Periods;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade as PDF;
 
 class SchoolsController extends Controller
 {
@@ -448,5 +451,43 @@ class SchoolsController extends Controller
 		}else{
 			return $this->sendResponse("Sorry, Data not found!", 200, false);
 		}
+	}
+
+	public function testPDF(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'start_date' => 'required',
+			'end_date' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$tardy_array = [];
+		$student_ids = Tardy::whereBetween('created_at', [$request->start_date, $request->end_date])->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->pluck('student_id')->toArray();
+
+		if (sizeof($student_ids) > 0) {
+			foreach (array_unique($student_ids) as $student_id) {
+				$tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$period = Periods::where(['uuid'=>$tardy->period_id, 'semester_id'=>$semester->uuid])->first();
+				$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$push_array = [
+					'date'=>date('Y-m-d', strtotime($tardy->created_at)),
+					'time'=>date('H:i:s', strtotime($tardy->created_at)),
+					'period'=>$period->period,
+					'student_id'=>$student_id,
+					'student_name'=>$student->first_name.' '.$student->last_name
+				];
+
+				array_push($tardy_array, $push_array);
+			}
+		}
+
+		$dataFirst = ['tardy_array'=>$tardy_array];
+
+		$filename = 'tardyRegularReport.pdf';
+		$pdf = PDF::loadView('tardyRegularReport', $dataFirst);
+		return $pdf->download($filename);
 	}
 }

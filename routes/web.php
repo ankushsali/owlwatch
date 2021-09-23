@@ -49,6 +49,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('add-detention-reason',  ['uses'=>'SchoolsController@addDetentionReason']);
     $router->post('create-detention-reason',  ['uses'=>'SchoolsController@createDetentionReason']);
     $router->post('get-detention-reasons',  ['uses'=>'SchoolsController@getDetentionReasons']);
+    $router->get('test-pdf',  ['uses'=>'SchoolsController@testPDF']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */
