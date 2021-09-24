@@ -487,7 +487,7 @@ class SchoolsController extends Controller
 
 		$filename = 'tardyRegularReport.pdf';
 		$pdf = PDF::loadView('tardyRegularReport', $dataFirst);
-		return $pdf->stream($filename);
+		return $pdf->download($filename);
 	}
 
 	public function tardyGroupedReport(Request $request){
@@ -528,7 +528,7 @@ class SchoolsController extends Controller
 
 		$filename = 'tardyGroupedReport.pdf';
 		$pdf = PDF::loadView('tardyGroupedReport', $dataFirst);
-		return $pdf->stream($filename);
+		return $pdf->download($filename);
 	}
 
 	public function detentionRegularReport(Request $request){
@@ -573,7 +573,7 @@ class SchoolsController extends Controller
 
 		$filename = 'detentionRegularReport.pdf';
 		$pdf = PDF::loadView('detentionRegularReport', $dataFirst);
-		return $pdf->stream($filename);
+		return $pdf->download($filename);
 	}
 
 	public function detentionGroupedReport(Request $request){
@@ -619,7 +619,7 @@ class SchoolsController extends Controller
 
 		$filename = 'detentionGroupedReport.pdf';
 		$pdf = PDF::loadView('detentionGroupedReport', $dataFirst);
-		return $pdf->stream($filename);
+		return $pdf->download($filename);
 	}
 
 	public function allSchools(Request $request){
