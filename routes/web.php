@@ -50,6 +50,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('create-detention-reason',  ['uses'=>'SchoolsController@createDetentionReason']);
     $router->post('get-detention-reasons',  ['uses'=>'SchoolsController@getDetentionReasons']);
     $router->get('tardy-regular-report',  ['uses'=>'SchoolsController@tardyRegularReport']);
+    $router->get('tardy-grouped-report',  ['uses'=>'SchoolsController@tardyGroupedReport']);
+    $router->get('detention-regular-report',  ['uses'=>'SchoolsController@detentionRegularReport']);
+    $router->get('detention-grouped-report',  ['uses'=>'SchoolsController@detentionGroupedReport']);
+    $router->post('all-schools',  ['uses'=>'SchoolsController@allSchools']);
+    $router->post('user-schools',  ['uses'=>'SchoolsController@userSchools']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */

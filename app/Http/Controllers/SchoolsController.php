@@ -15,6 +15,7 @@ use App\Models\StudentSchedules;
 use App\Models\DetentionReasons;
 use App\Models\Tardy;
 use App\Models\Periods;
+use App\Models\Detentions;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade as PDF;
 
@@ -70,15 +71,12 @@ class SchoolsController extends Controller
 		$this->validate($request, [
 			'user_id' => 'required',
 			'school_id' => 'required',
-			'role' => 'required',
-			'school_color' => 'required',
 		]);
 
 		$assign_school = new SchoolUsers;
 		$assign_school->user_id = $request->user_id;
 		$assign_school->school_id = $request->school_id;
-		$assign_school->role = $request->role;
-		$assign_school->color = $request->school_color;
+		$assign_school->is_admin = "true";
 		$result = $assign_school->save();
 
 		if ($result) {
@@ -466,10 +464,11 @@ class SchoolsController extends Controller
 		$student_ids = Tardy::whereBetween('created_at', [$request->start_date, $request->end_date])->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->pluck('student_id')->toArray();
 
 		if (sizeof($student_ids) > 0) {
-			foreach (array_unique($student_ids) as $student_id) {
+			foreach ($student_ids as $student_id) {
 				$tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
 
-				$period = Periods::where(['uuid'=>$tardy->period_id, 'semester_id'=>$semester->uuid])->first();
+				$period = Periods::where(['uuid'=>$tardy->period_id, 'school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->first();
+
 				$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
 
 				$push_array = [
@@ -488,6 +487,162 @@ class SchoolsController extends Controller
 
 		$filename = 'tardyRegularReport.pdf';
 		$pdf = PDF::loadView('tardyRegularReport', $dataFirst);
-		return $pdf->download($filename);
+		return $pdf->stream($filename);
+	}
+
+	public function tardyGroupedReport(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'start_date' => 'required',
+			'end_date' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$tardy_array = [];
+		$student_ids = Tardy::whereBetween('created_at', [$request->start_date, $request->end_date])->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->pluck('student_id')->toArray();
+
+		if (sizeof($student_ids) > 0) {
+			foreach (array_unique($student_ids) as $student_id) {
+				$tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$tardy_count = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->count();
+
+				$period = Periods::where(['uuid'=>$tardy->period_id, 'school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->first();
+
+				$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$push_array = [
+					'student_id'=>$student_id,
+					'student_name'=>$student->first_name.' '.$student->last_name,
+					'grade'=>$student->grade,
+					'tardy_count'=>$tardy_count,
+					'period_tardy_count'=>$tardy_count
+				];
+
+				array_push($tardy_array, $push_array);
+			}
+		}
+
+		$dataFirst = ['tardy_array'=>$tardy_array];
+
+		$filename = 'tardyGroupedReport.pdf';
+		$pdf = PDF::loadView('tardyGroupedReport', $dataFirst);
+		return $pdf->stream($filename);
+	}
+
+	public function detentionRegularReport(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'start_date' => 'required',
+			'end_date' => 'required',
+			'reasons' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$detention_array = [];
+		if ($request->reasons == 'null') {
+			$student_ids = Detentions::whereBetween('created_at', [$request->start_date, $request->end_date])->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->pluck('student_id')->toArray();
+		}else{
+			$student_ids = Detentions::whereBetween('created_at', [$request->start_date, $request->end_date])->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->whereIn('reason_id', $request->reasons)->pluck('student_id')->toArray();
+		}
+
+		if (sizeof($student_ids) > 0) {
+			foreach ($student_ids as $student_id) {
+				$detention = Detentions::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$reason = DetentionReasons::where(['uuid'=>$detention->reason_id, 'school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->first();
+
+				$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$push_array = [
+					'date'=>date('Y-m-d', strtotime($detention->created_at)),
+					'time'=>date('H:i:s', strtotime($detention->created_at)),
+					'student_id'=>$student_id,
+					'student_name'=>$student->first_name.' '.$student->last_name,
+					'reason'=>$reason->name,
+					'comments'=>$detention->comment,
+				];
+
+				array_push($detention_array, $push_array);
+			}
+		}
+
+		$dataFirst = ['detention_array'=>$detention_array];
+
+		$filename = 'detentionRegularReport.pdf';
+		$pdf = PDF::loadView('detentionRegularReport', $dataFirst);
+		return $pdf->stream($filename);
+	}
+
+	public function detentionGroupedReport(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+			'start_date' => 'required',
+			'end_date' => 'required',
+			'reasons' => 'required',
+		]);
+
+		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
+
+		$detention_array = [];
+		if ($request->reasons == 'null') {
+			$student_ids = Detentions::whereBetween('created_at', [$request->start_date, $request->end_date])->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->pluck('student_id')->toArray();
+		}else{
+			$student_ids = Detentions::whereBetween('created_at', [$request->start_date, $request->end_date])->where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->whereIn('reason_id', $request->reasons)->pluck('student_id')->toArray();
+		}
+
+		if (sizeof($student_ids) > 0) {
+			foreach (array_unique($student_ids) as $student_id) {
+				$detention = Detentions::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$detention_count = Detentions::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->count();
+
+				$reason = DetentionReasons::where(['uuid'=>$detention->reason_id, 'school_id'=>$request->school_id, 'semester_id'=>$semester->uuid])->first();
+
+				$student = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student_id])->first();
+
+				$push_array = [
+					'student_id'=>$student_id,
+					'student_name'=>$student->first_name.' '.$student->last_name,
+					'grade'=>$student->grade,
+					'detention_count'=>$detention_count,
+					'reason_detention_count'=>$detention_count,
+				];
+
+				array_push($detention_array, $push_array);
+			}
+		}
+
+		$dataFirst = ['detention_array'=>$detention_array];
+
+		$filename = 'detentionGroupedReport.pdf';
+		$pdf = PDF::loadView('detentionGroupedReport', $dataFirst);
+		return $pdf->stream($filename);
+	}
+
+	public function allSchools(Request $request){
+		$schools = Schools::get();
+
+		if (sizeof($schools) > 0) {
+			return $this->sendResponse($schools);
+		}else{
+			return $this->sendResponse("Sorry, Data not found!", 200, false);
+		}
+	}
+
+	public function userSchools(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+		]);
+
+		$user_schools = SchoolUsers::with('School')->where('user_id', $request->user_id)->get();
+
+		if (sizeof($user_schools) > 0) {
+			return $this->sendResponse($user_schools);
+		}else{
+			return $this->sendResponse("Sorry, Data not found!", 200, false);
+		}
 	}
 }
