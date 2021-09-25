@@ -55,6 +55,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('detention-grouped-report',  ['uses'=>'SchoolsController@detentionGroupedReport']);
     $router->post('all-schools',  ['uses'=>'SchoolsController@allSchools']);
     $router->post('user-schools',  ['uses'=>'SchoolsController@userSchools']);
+    $router->post('without-user-schools',  ['uses'=>'SchoolsController@withoutUserSchools']);
+    $router->post('unassign-school',  ['uses'=>'SchoolsController@unassignSchool']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */

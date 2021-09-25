@@ -645,4 +645,35 @@ class SchoolsController extends Controller
 			return $this->sendResponse("Sorry, Data not found!", 200, false);
 		}
 	}
+
+	public function withoutUserSchools(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+		]);
+
+		$user_schools = SchoolUsers::with('School')->where('user_id', $request->user_id)->pluck('school_id')->toArray();
+
+		$schools = Schools::whereNotIn('uuid', $user_schools)->get();
+
+		if (sizeof($schools) > 0) {
+			return $this->sendResponse($schools);
+		}else{
+			return $this->sendResponse("Sorry, Data not found!", 200, false);
+		}
+	}
+
+	public function unassignSchool(Request $request){
+		$this->validate($request, [
+			'user_id' => 'required',
+			'school_id' => 'required',
+		]);
+
+		$unassign = SchoolUsers::where(['school_id'=>$request->school_id, 'user_id'=>$request->user_id])->delete();
+
+		if ($unassign) {
+			return $this->sendResponse("User removed from school!");
+		}else{
+			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
 }
