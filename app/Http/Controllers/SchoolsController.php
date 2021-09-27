@@ -16,6 +16,8 @@ use App\Models\DetentionReasons;
 use App\Models\Tardy;
 use App\Models\Periods;
 use App\Models\Detentions;
+use App\Models\Settings;
+use App\Models\Subscriptions;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade as PDF;
 
@@ -28,6 +30,11 @@ class SchoolsController extends Controller
 			'detention_color' => 'required',
 			'user_id' => 'required',
 		]);
+
+		$getStartDate = Carbon::today();
+		$startDate = $getStartDate->format('Y-m-d');
+		$getEndDate = Carbon::today()->addDays(7);
+		$endDate = $getEndDate->format('Y-m-d');
 
 		$time = strtotime(Carbon::now());
 		$uuid = "sch".$time.rand(10,99)*rand(10,99);
@@ -60,8 +67,16 @@ class SchoolsController extends Controller
 		$tardy_setting->status = 'D';
 		$save_tardy_setting = $tardy_setting->save();
 
+		$subscription = new Subscriptions;
+		$subscription->school_id = $school->uuid;
+		$subscription->subscription = 'trail';
+		$subscription->start_date = $startDate;
+		$subscription->end_date = $endDate;
+		$save_subscription = $subscription->save();
+
 		if ($result) {
-			return $this->sendResponse("School added successfully!");
+			$get_school = Schools::with('Subscription')->where('uuid', $school->uuid)->first();
+			return $this->sendResponse($get_school);
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 		}
@@ -674,6 +689,20 @@ class SchoolsController extends Controller
 			return $this->sendResponse("User removed from school!");
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
+		}
+	}
+
+	public function getSchool(Request $request){
+		$this->validate($request, [
+			'school_id' => 'required',
+		]);
+
+		$school = Schools::with('Subscription')->where('uuid', $request->school_id)->first();
+
+		if (!empty($school)) {
+			return $this->sendResponse($school);
+		}else{
+			return $this->sendResponse("Sorry, Data not found!", 200, false);
 		}
 	}
 }

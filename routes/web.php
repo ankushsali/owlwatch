@@ -57,6 +57,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('user-schools',  ['uses'=>'SchoolsController@userSchools']);
     $router->post('without-user-schools',  ['uses'=>'SchoolsController@withoutUserSchools']);
     $router->post('unassign-school',  ['uses'=>'SchoolsController@unassignSchool']);
+    $router->post('get-school',  ['uses'=>'SchoolsController@getSchool']);
     /* SchoolsController APIs End */
 
     /* StudentsController APIs Start */

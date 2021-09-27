@@ -11,6 +11,7 @@ use App\Models\SchoolUsers;
 use App\Models\Semesters;
 use App\Models\Settings;
 use App\Models\UserImages;
+use App\Models\Subscriptions;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -26,6 +27,11 @@ class UsersController extends Controller
 			'type' => 'required',
 		]);
 		
+		$getStartDate = Carbon::today();
+		$startDate = $getStartDate->format('Y-m-d');
+		$getEndDate = Carbon::today()->addDays(7);
+		$endDate = $getEndDate->format('Y-m-d');
+
 		$response = [];
 
 		$check_mail = Users::where('email', $request->email)->first();
@@ -79,9 +85,16 @@ class UsersController extends Controller
 		$tardy_setting->status = 'D';
 		$save_tardy_setting = $tardy_setting->save();
 
+		$subscription = new Subscriptions;
+		$subscription->school_id = $school->uuid;
+		$subscription->subscription = 'trail';
+		$subscription->start_date = $startDate;
+		$subscription->end_date = $endDate;
+		$save_subscription = $subscription->save();
+
 		if ($result) {
 			$response['message'] = "Signup successfully!";
-			$user = Users::with('Schools.School')->where('uuid', $user->uuid)->first();
+			$user = Users::with('Schools.School', 'Schools.Subscription')->where('uuid', $user->uuid)->first();
 			$response['data'] = $user;
 			return $this->sendResponse($response);
 		}else{

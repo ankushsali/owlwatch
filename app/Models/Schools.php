@@ -14,4 +14,9 @@ class Schools extends Model
     protected $fillable = [
         'uuid', 'name', 'school_color', 'detention_color'
     ];
+
+    public function Subscription()
+    {
+        return $this->hasOne('App\Models\Subscriptions','school_id','uuid');
+    }
 }
