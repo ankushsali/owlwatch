@@ -14,6 +14,7 @@ use App\Models\Tardy;
 use App\Models\Detentions;
 use App\Models\Settings;
 use Carbon\Carbon;
+use ZipArchive;
 
 class StudentsController extends Controller
 {
@@ -248,6 +249,14 @@ class StudentsController extends Controller
 			foreach ($result as $student) {
 				$tardy = Tardy::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student->student_id])->get();
 				$student['tardy_count'] = sizeof($tardy);
+				$path = app()->basePath('public/user-images/');
+				if (file_exists($path.$request->school_id.'/'.$student->student_id.'.jpg')) {
+					$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.jpg';
+				}elseif (file_exists($path.$request->school_id.'/'.$student->student_id.'.png')) {
+					$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.png';
+				}else{
+					$student['image'] = env('APP_URL').'public/user-images/default.png';
+				}
 
 				$all_students[] = $student;
 			}
@@ -290,6 +299,15 @@ class StudentsController extends Controller
 			$student['tardy_count'] = sizeof($tardy);
 			$student['student_schedules'] = $StudentSchedules;
 			$student['student_contacts'] = $StudentContacts;
+			$path = app()->basePath('public/user-images/');
+			if (file_exists($path.$request->school_id.'/'.$request->student_id.'.jpg')) {
+				$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.jpg';
+			}elseif (file_exists($path.$request->school_id.'/'.$request->student_id.'.png')) {
+				$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.png';
+			}else{
+				$student['image'] = env('APP_URL').'public/user-images/default.png';
+			}
+
 			return $this->sendResponse($student);
 		}else{
 			return $this->sendResponse("Sorry, Student not found!",200,false);
@@ -566,5 +584,40 @@ class StudentsController extends Controller
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);
 		}
+	}
+
+	public function uploadImages(Request $request){
+		$this->validate($request, [
+			'file' => 'required',
+			'school_id' => 'required',
+		]);
+
+		$path = app()->basePath('public/user-images/');
+		$fileName = $this->zipUpload($path, $request->file, $request->school_id);
+
+		$zip = new ZipArchive;
+		$res = $zip->open($path.$fileName);
+
+		if ($res === TRUE) {
+			if (!file_exists($path.$request->school_id)) {
+				mkdir($path.$request->school_id, 0777, true);
+			}else{
+				$files = glob($path.$request->school_id.'/' . '*', GLOB_MARK);
+			    foreach ($files as $file) {
+			    	if (!is_dir($file)) {
+			    		unlink($file);
+			    	}
+			    }
+
+				rmdir($path.$request->school_id);
+				mkdir($path.$request->school_id, 0777, true);
+			}
+			
+			$zip->extractTo($path.$request->school_id);
+  			$zip->close();
+		}
+
+		unlink($path.$fileName);
+		return $this->sendResponse("Upload successfully!");
 	}
 }

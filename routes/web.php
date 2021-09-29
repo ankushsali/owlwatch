@@ -79,6 +79,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('create-detention',  ['uses'=>'StudentsController@createDetention']);
     $router->post('get-detentions',  ['uses'=>'StudentsController@getDetentions']);
     $router->post('update-detention-serve',  ['uses'=>'StudentsController@updateDetentionServe']);
+    $router->post('upload-images',  ['uses'=>'StudentsController@uploadImages']);
     /* StudentsController APIs End */
 
     /* SettingsController APIs Start */

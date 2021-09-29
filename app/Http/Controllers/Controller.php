@@ -24,7 +24,7 @@ class Controller extends BaseController
         ]);
     }
 
-    public function upload($myPath,$image)
+    public function upload($myPath, $image)
     {
         $folderPath = $myPath;//app()->basePath('public/');
         $fileName =  rand().'Image.png';
@@ -44,6 +44,27 @@ class Controller extends BaseController
         else
         {
             $finalImage = "default.png";
+        } 
+        
+        return $finalImage;
+    }
+
+    public function zipUpload($myPath, $image, $school_id)
+    {
+        $folderPath = $myPath;//app()->basePath('public/');
+        $fileName =  $school_id.'.zip';
+        $base64Image = $image;
+        $base64Image = trim($base64Image);
+        $base64Image = str_replace(' ', '+', $base64Image);
+
+        $imageData = base64_decode($base64Image);
+        $filePath = $folderPath . $fileName;
+        if(file_put_contents($filePath, $imageData)){
+            $finalImage = $fileName; 
+        }
+        else
+        {
+            $finalImage = "default.zip";
         } 
         
         return $finalImage;
