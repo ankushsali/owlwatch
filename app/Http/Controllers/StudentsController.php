@@ -254,6 +254,8 @@ class StudentsController extends Controller
 					$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.jpg';
 				}elseif (file_exists($path.$request->school_id.'/'.$student->student_id.'.png')) {
 					$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.png';
+				}elseif (file_exists($path.$request->school_id.'/'.$student->student_id.'.jpeg')) {
+					$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.jpeg';
 				}else{
 					$student['image'] = env('APP_URL').'public/user-images/default.png';
 				}
@@ -304,6 +306,8 @@ class StudentsController extends Controller
 				$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.jpg';
 			}elseif (file_exists($path.$request->school_id.'/'.$request->student_id.'.png')) {
 				$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.png';
+			}elseif (file_exists($path.$request->school_id.'/'.$request->student_id.'.jpeg')) {
+				$student['image'] = env('APP_URL').'public/user-images/'.$request->school_id.'/'.$student->student_id.'.jpeg';
 			}else{
 				$student['image'] = env('APP_URL').'public/user-images/default.png';
 			}
