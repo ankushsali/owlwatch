@@ -16,9 +16,9 @@
 			  	padding: 8px;
 			}
 
-			tr:nth-child(even) {
+			/*tr:nth-child(even) {
 			  	background-color: #dddddd;
-			}
+			}*/
 		</style>
 	</head>
 	<body>
@@ -28,7 +28,7 @@
 		if (sizeof($tardy_array) > 0) {
 			?>
 			<table>
-				<tr>
+				<tr style="background-color: #dddddd;">
 				    <th>Student ID</th>
 				    <th>Student Name</th>
 				    <th>Grade</th>

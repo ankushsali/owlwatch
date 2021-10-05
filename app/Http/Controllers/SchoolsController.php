@@ -17,7 +17,7 @@ use App\Models\Tardy;
 use App\Models\Periods;
 use App\Models\Detentions;
 use App\Models\Settings;
-use App\Models\Subscriptions;
+use App\Models\SchoolSubscriptions;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade as PDF;
 
@@ -67,7 +67,7 @@ class SchoolsController extends Controller
 		$tardy_setting->status = 'D';
 		$save_tardy_setting = $tardy_setting->save();
 
-		$subscription = new Subscriptions;
+		$subscription = new SchoolSubscriptions;
 		$subscription->school_id = $school->uuid;
 		$subscription->subscription = 'trail';
 		$subscription->start_date = $startDate;

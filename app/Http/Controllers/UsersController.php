@@ -11,7 +11,7 @@ use App\Models\SchoolUsers;
 use App\Models\Semesters;
 use App\Models\Settings;
 use App\Models\UserImages;
-use App\Models\Subscriptions;
+use App\Models\SchoolSubscriptions;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -85,7 +85,7 @@ class UsersController extends Controller
 		$tardy_setting->status = 'D';
 		$save_tardy_setting = $tardy_setting->save();
 
-		$subscription = new Subscriptions;
+		$subscription = new SchoolSubscriptions;
 		$subscription->school_id = $school->uuid;
 		$subscription->subscription = 'trail';
 		$subscription->start_date = $startDate;
