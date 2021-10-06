@@ -18,6 +18,7 @@ use App\Models\Periods;
 use App\Models\Detentions;
 use App\Models\Settings;
 use App\Models\SchoolSubscriptions;
+use App\Models\Subscriptions;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade as PDF;
 
@@ -76,6 +77,7 @@ class SchoolsController extends Controller
 
 		if ($result) {
 			$get_school = Schools::with('Subscription')->where('uuid', $school->uuid)->first();
+			$get_school['subscription_detail'] = Subscriptions::where('subscription_id', 'trial')->first();
 			return $this->sendResponse($get_school);
 		}else{
 			return $this->sendResponse("Sorry, Something went wrong!", 200, false);

@@ -12,6 +12,7 @@ use App\Models\Semesters;
 use App\Models\Settings;
 use App\Models\UserImages;
 use App\Models\SchoolSubscriptions;
+use App\Models\Subscriptions;
 use Carbon\Carbon;
 
 class UsersController extends Controller
@@ -95,6 +96,7 @@ class UsersController extends Controller
 		if ($result) {
 			$response['message'] = "Signup successfully!";
 			$user = Users::with('Schools.School', 'Schools.Subscription')->where('uuid', $user->uuid)->first();
+			$user['subscription_detail'] = Subscriptions::where('subscription_id', 'trial')->first();
 			$response['data'] = $user;
 			return $this->sendResponse($response);
 		}else{
@@ -271,7 +273,7 @@ class UsersController extends Controller
 			'login_id' => 'required'
 		]);
 
-		$user = Users::with('Schools.School', 'Schools.Subscription')->where('login_id', $request->login_id)->first();
+		$user = Users::with('Schools.School', 'Schools.Subscription.Subscription')->where('login_id', $request->login_id)->first();
 		if ($user->first_name == '' && $user->last_name == '' && $user->email == '') {
 			$user->is_verified = false;
 		}else{
@@ -288,6 +290,7 @@ class UsersController extends Controller
 					'token' => $token_string,
 				]);
 			}
+			
 			return $this->sendResponse($user);
 		}else{
 			return $this->sendResponse("Login failed!", 200, false);
