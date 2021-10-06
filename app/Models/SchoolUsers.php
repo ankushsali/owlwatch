@@ -22,6 +22,6 @@ class SchoolUsers extends Model
 
     public function Subscription()
     {
-        return $this->hasOne('App\Models\Subscriptions','school_id','school_id');
+        return $this->hasOne('App\Models\SchoolSubscriptions','school_id','school_id');
     }
 }

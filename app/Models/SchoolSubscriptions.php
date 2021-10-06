@@ -14,4 +14,9 @@ class SchoolSubscriptions extends Model
     protected $fillable = [
         'school_id', 'subscription', 'start_date', 'end_date'
     ];
+
+    public function Subscription()
+    {
+        return $this->hasOne('App\Models\Subscriptions','subscription_id','subscription');
+    }
 }

@@ -13,6 +13,7 @@ use App\Models\Periods;
 use App\Models\Tardy;
 use App\Models\Detentions;
 use App\Models\Settings;
+use App\Models\SchoolSubscriptions;
 use Carbon\Carbon;
 use ZipArchive;
 
@@ -118,27 +119,42 @@ class StudentsController extends Controller
 
 		$semester = Semesters::where('school_id', $request->school_id)->orderBy('created_at', 'desc')->first();
 
+		$subscription = SchoolSubscriptions::with('Subscription')->where('school_id', $request->school_id)->first();
+
 		foreach ($studentArr as $student) {
 			if (!isset($student[$request->first_name]) || !isset($student[$request->last_name]) || !isset($student[$request->student_id])) {
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
-			$exist_flag = 1;
+			$check_data = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->first();
 
-			$student_data = new StudentData;
-			$student_data->school_id = $request->school_id;
-			$student_data->semester_id = $semester->uuid;
-			$student_data->first_name = $student['First Name'];
-			$student_data->last_name = $student['Last Name'];
-			$student_data->student_id = $student['Student ID'];
-			$student_data->grade = $student['Grade'];
-			$student_data->dob = $student['Date of Birth'];
-			$student_data->counselor = $student['Counselor'];
-			$student_data->locker_number = $student['Locker Number'];
-			$student_data->locker_combination = $student['Locker Combination'];
-			$student_data->parking_space = $student['Parking Space'];
-			$student_data->license_plate = $student['License Plate'];
-			$result = $student_data->save();
+			if (!empty($check_data)) {
+				$check_data = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->delete();
+			}
+		}
+
+		$count = 1;
+		foreach ($studentArr as $student) {
+			if ($count <= $subscription->Subscription->limit) {
+				$exist_flag = 1;
+
+				$student_data = new StudentData;
+				$student_data->school_id = $request->school_id;
+				$student_data->semester_id = $semester->uuid;
+				$student_data->first_name = $student['First Name'];
+				$student_data->last_name = $student['Last Name'];
+				$student_data->student_id = $student['Student ID'];
+				$student_data->grade = $student['Grade'];
+				$student_data->dob = $student['Date of Birth'];
+				$student_data->counselor = $student['Counselor'];
+				$student_data->locker_number = $student['Locker Number'];
+				$student_data->locker_combination = $student['Locker Combination'];
+				$student_data->parking_space = $student['Parking Space'];
+				$student_data->license_plate = $student['License Plate'];
+				$result = $student_data->save();
+			}
+
+			$count++;
 		}
 
 		if ($result != 0) {
