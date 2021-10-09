@@ -65,10 +65,10 @@ class StudentsController extends Controller
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
-			$check_contact = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->first();
+			$check_contact = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student[$request->student_id]])->first();
 
 			if (!empty($check_contact)) {
-				$check_contact = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->delete();
+				$check_contact = StudentContacts::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student[$request->student_id]])->delete();
 			}
 		}
 
@@ -78,11 +78,17 @@ class StudentsController extends Controller
 			$student_contact = new StudentContacts;
 			$student_contact->school_id = $request->school_id;
 			$student_contact->semester_id = $semester->uuid;
-			$student_contact->student_id = $student['Student ID'];
-			$student_contact->name = $student['Name'];
-			$student_contact->phone = $student['Phone'];
-			$student_contact->phone_type = $student['Phone Type'];
-			$student_contact->email = $student['Email'];
+			$student_contact->student_id = $student[$request->student_id];
+			$student_contact->name = $student[$request->name];
+			if (isset($student[$request->phone])) {
+				$student_contact->phone = $student[$request->phone];
+			}
+			if (isset($student[$request->phone_type])) {
+				$student_contact->phone_type = $student[$request->phone_type];
+			}
+			if (isset($student[$request->email])) {
+				$student_contact->email = $student[$request->email];
+			}
 			$result = $student_contact->save();
 		}
 
@@ -126,10 +132,10 @@ class StudentsController extends Controller
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
-			$check_data = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->first();
+			$check_data = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student[$request->student_id]])->first();
 
 			if (!empty($check_data)) {
-				$check_data = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->delete();
+				$check_data = StudentData::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student[$request->student_id]])->delete();
 			}
 		}
 
@@ -141,16 +147,30 @@ class StudentsController extends Controller
 				$student_data = new StudentData;
 				$student_data->school_id = $request->school_id;
 				$student_data->semester_id = $semester->uuid;
-				$student_data->first_name = $student['First Name'];
-				$student_data->last_name = $student['Last Name'];
-				$student_data->student_id = $student['Student ID'];
-				$student_data->grade = $student['Grade'];
-				$student_data->dob = $student['Date of Birth'];
-				$student_data->counselor = $student['Counselor'];
-				$student_data->locker_number = $student['Locker Number'];
-				$student_data->locker_combination = $student['Locker Combination'];
-				$student_data->parking_space = $student['Parking Space'];
-				$student_data->license_plate = $student['License Plate'];
+				$student_data->first_name = $student[$request->first_name];
+				$student_data->last_name = $student[$request->last_name];
+				$student_data->student_id = $student[$request->student_id];
+				if (isset($student[$request->grade])) {
+					$student_data->grade = $student[$request->grade];
+				}
+				if (isset($student[$request->dob])) {
+					$student_data->dob = $student[$request->dob];
+				}
+				if (isset($student[$request->counselor])) {
+					$student_data->counselor = $student[$request->counselor];
+				}
+				if (isset($student[$request->locker_number])) {
+					$student_data->locker_number = $student[$request->locker_number];
+				}
+				if (isset($student[$request->locker_combination])) {
+					$student_data->locker_combination = $student[$request->locker_combination];
+				}
+				if (isset($student[$request->parking_space])) {
+					$student_data->parking_space = $student[$request->parking_space];
+				}
+				if (isset($student[$request->license_plate])) {
+					$student_data->license_plate = $student[$request->license_plate];
+				}
 				$result = $student_data->save();
 			}
 
@@ -193,10 +213,10 @@ class StudentsController extends Controller
 				return $this->sendResponse("Data is not formatted in this file!",200,false);
 			}
 
-			$check_schedule = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->first();
+			$check_schedule = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student[$request->student_id]])->first();
 
 			if (!empty($check_schedule)) {
-				$check_schedule = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student['Student ID']])->delete();
+				$check_schedule = StudentSchedules::where(['school_id'=>$request->school_id, 'semester_id'=>$semester->uuid, 'student_id'=>$student[$request->student_id]])->delete();
 			}
 		}
 
@@ -208,12 +228,18 @@ class StudentsController extends Controller
 			$student_schedule = new StudentSchedules;
 			$student_schedule->school_id = $request->school_id;
 			$student_schedule->semester_id = $semester->uuid;
-			$student_schedule->student_id = $student['Student ID'];
-			$student_schedule->period = $student['Period'];
-			$student_schedule->teacher = $student['Teacher'];
-			$student_schedule->room_number = $student['Room Number'];
-			$student_schedule->class_name = $student['Class Name'];
-			$student_schedule->semester = $student['Semester'];
+			$student_schedule->student_id = $student[$request->student_id];
+			$student_schedule->period = $student[$request->period];
+			if (isset($student[$request->teacher])) {
+				$student_schedule->teacher = $student[$request->teacher];
+			}
+			if (isset($student[$request->room_number])) {
+				$student_schedule->room_number = $student[$request->room_number];
+			}
+			$student_schedule->class_name = $student[$request->class_name];
+			if (isset($student[$request->semester])) {
+				$student_schedule->semester = $student[$request->semester];
+			}
 			$result = $student_schedule->save();
 		}
 

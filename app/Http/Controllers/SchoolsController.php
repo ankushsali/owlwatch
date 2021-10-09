@@ -70,7 +70,7 @@ class SchoolsController extends Controller
 
 		$subscription = new SchoolSubscriptions;
 		$subscription->school_id = $school->uuid;
-		$subscription->subscription = 'trail';
+		$subscription->subscription = 'trial';
 		$subscription->start_date = $startDate;
 		$subscription->end_date = $endDate;
 		$save_subscription = $subscription->save();
